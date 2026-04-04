@@ -1,11 +1,17 @@
+import { auth } from '@/auth'
 import { CustomerLayout } from '@/components/layouts/CustomerLayout'
 import Link from 'next/link'
 import { getOrders } from '@/lib/actions'
 import { Search, Filter, ChevronRight, Package, Clock, Calendar } from 'lucide-react'
+import { redirect } from 'next/navigation'
 
-export default async function OrdersPage() {
-  const JOHN_ID = 'cmnkq88z10007tld5t8yqbrvk'
-  const orders = await getOrders(JOHN_ID)
+export default async function CustomerOrdersPage() {
+  const session = await auth()
+  if (!session?.user) {
+    redirect('/login')
+  }
+
+  const orders = await getOrders(session.user.id)
 
   return (
     <CustomerLayout>

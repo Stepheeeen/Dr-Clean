@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { LogOut, LayoutDashboard, Package, Users, Settings, BarChart3, Wrench } from 'lucide-react'
 import { useState } from 'react'
+import { logout } from '@/lib/auth-actions'
 
 interface AdminLayoutProps {
   children: React.ReactNode
@@ -10,6 +11,10 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const [showProfileMenu, setShowProfileMenu] = useState(false)
+
+  const handleLogout = async () => {
+    await logout()
+  }
 
   return (
     <div className="min-h-screen flex bg-muted/30">

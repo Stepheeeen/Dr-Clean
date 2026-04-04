@@ -103,25 +103,54 @@ export async function updateOrderStatus(orderId: string, status: string) {
   }
 }
 
+// --- Customer Actions ---
+
+export async function getCustomers() {
+  try {
+    return await prisma.user.findMany({
+      where: { role: 'CUSTOMER' },
+      include: {
+        _count: {
+          select: { orders: true }
+        },
+        orders: {
+          select: { total: true }
+        }
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+  } catch (error) {
+    console.error('Error fetching customers:', error)
+    return []
+  }
+}
+
 // --- Analytics Actions ---
 
 export async function getDashboardStats() {
   try {
-    const [totalOrders, activeOrders, totalRevenue] = await Promise.all([
+    const [totalOrders, activeOrders, totalRevenue, totalCustomers] = await Promise.all([
       prisma.order.count(),
       prisma.order.count({
         where: { NOT: { status: { in: ['Completed', 'Cancelled'] } } }
       }),
       prisma.order.aggregate({
         _sum: { total: true }
+      }),
+      prisma.user.count({
+        where: { role: 'CUSTOMER' }
       })
     ])
+
+    const revenue = totalRevenue._sum.total || 0
 
     return {
       totalOrders,
       activeOrders,
-      totalRevenue: totalRevenue._sum.total || 0,
-      averageOrderValue: totalOrders > 0 ? (totalRevenue._sum.total || 0) / totalOrders : 0,
+      totalRevenue: revenue,
+      totalCustomers,
+      averageOrderValue: totalOrders > 0 ? revenue / totalOrders : 0,
+      growth: 12.5, // Mock for now
     }
   } catch (error) {
     console.error('Error fetching dashboard stats:', error)
@@ -129,7 +158,48 @@ export async function getDashboardStats() {
       totalOrders: 0,
       activeOrders: 0,
       totalRevenue: 0,
+      totalCustomers: 0,
       averageOrderValue: 0,
+      growth: 0,
+    }
+  }
+}
+
+export async function getAnalytics() {
+  try {
+    const orders = await prisma.order.findMany({
+      orderBy: { createdAt: 'asc' },
+      select: {
+        createdAt: true,
+        total: true,
+      }
+    })
+
+    const chartData = orders.reduce((acc: any[], order) => {
+      const date = new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      const existing = acc.find(d => d.date === date)
+      if (existing) {
+        existing.orders += 1
+        existing.revenue += order.total
+      } else {
+        acc.push({ date, orders: 1, revenue: order.total })
+      }
+      return acc
+    }, [])
+
+    return {
+      totalRevenue: orders.reduce((sum, o) => sum + o.total, 0),
+      totalOrders: orders.length,
+      averageOrderValue: orders.length > 0 ? orders.reduce((sum, o) => sum + o.total, 0) / orders.length : 0,
+      chartData,
+    }
+  } catch (error) {
+    console.error('Error fetching analytics:', error)
+    return {
+      totalRevenue: 0,
+      totalOrders: 0,
+      averageOrderValue: 0,
+      chartData: [],
     }
   }
 }

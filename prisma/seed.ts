@@ -1,8 +1,16 @@
 import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
 async function main() {
+  console.log('Cleaning up database...')
+  await prisma.orderItem.deleteMany()
+  await prisma.order.deleteMany()
+  await prisma.service.deleteMany()
+  await prisma.user.deleteMany()
+  console.log('Database cleaned.')
+
   console.log('Start seeding...')
 
   // Seed Services
@@ -22,24 +30,29 @@ async function main() {
     console.log(`Created service with id: ${service.id}`)
   }
 
-  // Seed a demo Admin and Customer
+  // Seed a demo Admin  // Create Admin
+  const adminPassword = await bcrypt.hash('admin123', 10)
   const admin = await prisma.user.upsert({
     where: { email: 'admin@drclean.com' },
     update: {},
     create: {
       email: 'admin@drclean.com',
       name: 'Admin User',
+      password: adminPassword,
       role: 'ADMIN',
     },
   })
   console.log(`Created admin: ${admin.email}`)
 
+  // Create Customer
+  const customerPassword = await bcrypt.hash('password123', 10)
   const customer = await prisma.user.upsert({
     where: { email: 'john@example.com' },
     update: {},
     create: {
       email: 'john@example.com',
       name: 'John Smith',
+      password: customerPassword,
       role: 'CUSTOMER',
     },
   })

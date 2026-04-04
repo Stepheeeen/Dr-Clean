@@ -1,12 +1,17 @@
+import { auth } from '@/auth'
 import { CustomerLayout } from '@/components/layouts/CustomerLayout'
 import Link from 'next/link'
 import { getOrders } from '@/lib/actions'
 import { Clock, CheckCircle, Package, Plus, TrendingUp } from 'lucide-react'
+import { redirect } from 'next/navigation'
 
 export default async function CustomerDashboard() {
-  // Hardcoded seeded customer John Smith
-  const JOHN_ID = 'cmnkq88z10007tld5t8yqbrvk'
-  const allOrders = await getOrders(JOHN_ID)
+  const session = await auth()
+  if (!session?.user) {
+    redirect('/login')
+  }
+
+  const allOrders = await getOrders(session.user.id)
   const activeOrders = allOrders.filter((order) => !['Completed', 'Cancelled'].includes(order.status))
   const totalSpent = allOrders.reduce((sum, order) => sum + order.total, 0)
 
@@ -17,7 +22,7 @@ export default async function CustomerDashboard() {
         <div className="relative bg-white rounded-[2.5rem] border border-border/50 p-10 overflow-hidden group shadow-sm">
           <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-20 -mt-20 group-hover:scale-125 transition-transform duration-700"></div>
           <div className="relative z-10">
-            <h2 className="text-4xl font-extrabold text-foreground tracking-tight mb-2">Hello, John!</h2>
+            <h2 className="text-4xl font-extrabold text-foreground tracking-tight mb-2">Hello, {session.user.name?.split(' ')[0] || 'there'}!</h2>
             <p className="text-muted-foreground text-lg max-w-lg mb-8 font-medium">Your world-class garment care is just a few clicks away. Everything looks fresh today.</p>
             <Link 
               href="/customer/orders/new" 

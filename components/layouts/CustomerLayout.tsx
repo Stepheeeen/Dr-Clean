@@ -4,6 +4,7 @@ import { Header } from './Header'
 import Link from 'next/link'
 import { LogOut, User, LayoutDashboard, Package, Settings } from 'lucide-react'
 import { useState } from 'react'
+import { logout } from '@/lib/auth-actions'
 
 interface CustomerLayoutProps {
   children: React.ReactNode
@@ -11,6 +12,10 @@ interface CustomerLayoutProps {
 
 export function CustomerLayout({ children }: CustomerLayoutProps) {
   const [showProfileMenu, setShowProfileMenu] = useState(false)
+
+  const handleLogout = async () => {
+    await logout()
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-muted/20">
