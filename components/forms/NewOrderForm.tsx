@@ -6,12 +6,7 @@ import { createOrder } from '@/lib/actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
-interface Service {
-  id: string
-  name: string
-  description: string
-  price: number
-}
+import { Service } from '@/types'
 
 interface NewOrderFormProps {
   services: Service[]

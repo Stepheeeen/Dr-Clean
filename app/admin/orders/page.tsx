@@ -1,7 +1,8 @@
 import { AdminLayout } from '@/components/layouts/AdminLayout'
 import Link from 'next/link'
 import { getOrders } from '@/lib/actions'
-import { Search, Filter, MoreHorizontal, ChevronRight, Package, Tag, Clock } from 'lucide-react'
+import { formatPrice } from '@/lib/utils'
+import { Search, Filter, Calendar, ChevronRight, Package, Clock, User, ArrowUpRight } from 'lucide-react'
 
 // This should ideally be a Server Component that passes data to a Client Component for searching
 // But for this turn, I'll implement a clean Server-Side list first.
@@ -80,7 +81,7 @@ export default async function AdminOrdersPage() {
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <p className="text-sm font-extrabold text-foreground tracking-tight">${order.total.toFixed(2)}</p>
+                      <p className="text-sm font-extrabold text-foreground tracking-tight">{formatPrice(order.total)}</p>
                       <p className="text-[10px] text-muted-foreground font-medium flex items-center gap-1 mt-1">
                         <Clock size={10} /> {new Date(order.createdAt).toLocaleDateString()}
                       </p>

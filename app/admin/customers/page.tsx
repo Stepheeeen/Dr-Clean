@@ -1,6 +1,7 @@
 import { AdminLayout } from '@/components/layouts/AdminLayout'
 import Link from 'next/link'
 import { getCustomers } from '@/lib/actions'
+import { formatPrice } from '@/lib/utils'
 import { Search, UserCheck, Mail, Calendar, ChevronRight } from 'lucide-react'
 
 export default async function AdminCustomersPage() {
@@ -68,7 +69,7 @@ export default async function AdminCustomersPage() {
                     </td>
                     <td className="px-8 py-6">
                       <p className="text-sm font-extrabold text-foreground tracking-tight">
-                        ${customer.orders.reduce((sum, o) => sum + o.total, 0).toFixed(2)}
+                        {formatPrice(customer.orders.reduce((sum, o) => sum + o.total, 0))}
                       </p>
                       <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Lifetime Investment</p>
                     </td>

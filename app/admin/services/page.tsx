@@ -1,6 +1,7 @@
 import { AdminLayout } from '@/components/layouts/AdminLayout'
 import { getServices } from '@/lib/actions'
-import { Plus, Edit3, Trash2, Check, Smartphone, Layers } from 'lucide-react'
+import { formatPrice } from '@/lib/utils'
+import { Plus, Search, Filter, Edit2, Trash2, MoreHorizontal, ChevronRight, CheckCircle2, Clock, Tag, Smartphone, Layers, Check } from 'lucide-react'
 
 export default async function AdminServicesPage() {
   const services = await getServices()
@@ -31,7 +32,7 @@ export default async function AdminServicesPage() {
                 </div>
                 <div className="flex gap-2">
                   <button className="p-2.5 bg-slate-100 text-slate-600 rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm">
-                    <Edit3 size={16} />
+                    <Edit2 size={16} />
                   </button>
                   <button className="p-2.5 bg-slate-100 text-destructive rounded-xl hover:bg-destructive hover:text-white transition-all shadow-sm">
                     <Trash2 size={16} />
@@ -47,7 +48,7 @@ export default async function AdminServicesPage() {
               <div className="pt-8 border-t border-border/30 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Price Per Item</p>
-                  <p className="text-2xl font-extrabold text-foreground tracking-tighter">${service.price.toFixed(2)}</p>
+                  <p className="text-2xl font-extrabold text-foreground tracking-tighter">{formatPrice(service.price)}</p>
                 </div>
                 <span className="px-4 py-1.5 bg-emerald-100 text-emerald-800 text-[10px] font-bold rounded-full border border-emerald-200 shadow-sm flex items-center gap-1.5">
                   <Check size={12} />

@@ -2,6 +2,7 @@ import { auth } from '@/auth'
 import { CustomerLayout } from '@/components/layouts/CustomerLayout'
 import Link from 'next/link'
 import { getOrders } from '@/lib/actions'
+import { formatPrice } from '@/lib/utils'
 import { Clock, CheckCircle, Package, Plus, TrendingUp } from 'lucide-react'
 import { redirect } from 'next/navigation'
 
@@ -39,7 +40,7 @@ export default async function CustomerDashboard() {
           {[
             { label: 'Active Orders', value: activeOrders.length, icon: Clock, color: 'text-primary', bg: 'bg-primary/5' },
             { label: 'Total Requests', value: allOrders.length, icon: Package, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-            { label: 'Total Investment', value: `$${totalSpent.toFixed(2)}`, icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50' }
+            { label: 'Total Spent', value: formatPrice(totalSpent), icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50' }
           ].map((stat, i) => (
             <div key={i} className="bg-white rounded-[2rem] border border-border/50 p-8 shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 group">
               <div className="flex items-center justify-between mb-4">
@@ -116,7 +117,7 @@ export default async function CustomerDashboard() {
                 <div key={order.id} className="p-8 hover:bg-muted/30 transition-all duration-300">
                   <div className="flex items-center justify-between mb-2">
                     <p className="font-bold text-foreground tracking-tight">#{order.orderNumber}</p>
-                    <p className="text-sm font-extrabold text-foreground">${order.total.toFixed(2)}</p>
+                    <p className="text-sm font-extrabold text-foreground">{formatPrice(order.total)}</p>
                   </div>
                   <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
                     <span className="truncate max-w-[200px]">

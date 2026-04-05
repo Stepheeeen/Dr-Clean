@@ -1,4 +1,5 @@
 import { CustomerLayout } from '@/components/layouts/CustomerLayout'
+import { formatPrice } from '@/lib/utils'
 import Link from 'next/link'
 import { MOCK_ORDERS } from '@/lib/mock-data'
 import { ChevronLeft, MapPin, Calendar, Phone } from 'lucide-react'
@@ -76,12 +77,12 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                     <p className="font-medium text-foreground">{item.service}</p>
                     <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
                   </div>
-                  <p className="font-semibold text-foreground">${(item.price * item.quantity).toFixed(2)}</p>
+                  <p className="font-semibold text-foreground">{formatPrice(item.price * item.quantity)}</p>
                 </div>
               ))}
               <div className="pt-3 flex items-center justify-between font-bold text-lg">
                 <span>Total</span>
-                <span>${order.total.toFixed(2)}</span>
+                <span>{formatPrice(order.total)}</span>
               </div>
             </div>
           </div>

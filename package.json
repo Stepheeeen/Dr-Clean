@@ -58,8 +58,10 @@
     "react-hook-form": "^7.54.1",
     "react-resizable-panels": "^2.1.7",
     "recharts": "2.15.0",
+    "resend": "^6.10.0",
     "sonner": "^1.7.1",
     "tailwind-merge": "^3.3.1",
+    "uuid": "^13.0.0",
     "vaul": "^1.1.2",
     "zod": "^3.24.1"
   },
@@ -69,6 +71,7 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/uuid": "^10.0.0",
     "postcss": "^8.5",
     "prisma": "^6.19.3",
     "tailwindcss": "^4.2.0",

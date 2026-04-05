@@ -1,16 +1,18 @@
 'use server'
 
-import prisma from './db'
+import prisma from '@/lib/db'
 import { revalidatePath } from 'next/cache'
+import { Service } from '@/types'
 
 // --- Service Actions ---
 
-export async function getServices() {
+export async function getServices(): Promise<Service[]> {
   try {
-    return await prisma.service.findMany({
+    const services = await prisma.service.findMany({
       where: { isActive: true },
       orderBy: { name: 'asc' },
     })
+    return services as Service[]
   } catch (error) {
     console.error('Error fetching services:', error)
     return []

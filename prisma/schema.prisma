@@ -11,14 +11,23 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String?
-  name      String?
-  role      String   @default("CUSTOMER") // CUSTOMER, ADMIN
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  orders    Order[]
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String?
+  name          String?
+  role          String    @default("CUSTOMER") // CUSTOMER, ADMIN
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  orders        Order[]
+}
+
+model PasswordResetToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
 }
 
 model Service {
@@ -26,10 +35,42 @@ model Service {
   name        String
   description String
   price       Float
+  unit        String   @default("item") // item, kg, etc.
   category    String?  // Laundry, Dry Cleaning, etc.
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model PriceModifier {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  type        ModifierType @default(SURCHARGE) // SURCHARGE, DISCOUNT
+  valueType   ValueType    @default(FIXED)     // FIXED, PERCENTAGE
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model BulkDiscount {
+  id          String   @id @default(cuid())
+  threshold   Float    // Minimum order amount 
+  percentage  Float    // Discount percentage
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum ModifierType {
+  SURCHARGE
+  DISCOUNT
+}
+
+enum ValueType {
+  FIXED
+  PERCENTAGE
 }
 
 model Order {

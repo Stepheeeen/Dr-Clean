@@ -7,30 +7,54 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Dr. Clean | Premium Laundry & Dry Cleaning Service',
-  description: 'Professional laundry and dry cleaning service with pickup and delivery. Experience premium care for your clothes.',
-  generator: 'v0.app',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://dr-clean.com.ng'),
+  title: {
+    default: 'Dr. Clean | Premium Laundry & Dry Cleaning Nigeria',
+    template: '%s | Dr. Clean'
+  },
+  description: 'Pure excellence in laundry and dry cleaning. Experience premium, reliable, and editorial-quality garment care in Lagos and Abuja. Pickup and delivery available.',
+  keywords: ['Laundry service Lagos', 'Dry cleaning Abuja', 'Premium laundry Nigeria', 'Garment care', 'Dr. Clean laundry'],
+  authors: [{ name: 'Dr. Clean Team' }],
+  creator: 'Dr. Clean',
+  publisher: 'Dr. Clean',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  openGraph: {
+    title: 'Dr. Clean | Premium Laundry & Dry Cleaning',
+    description: 'Expert garment care with a touch of blue. Experience the future of laundry in Nigeria.',
+    url: 'https://dr-clean.com.ng',
+    siteName: 'Dr. Clean',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Dr. Clean Premium Laundry',
+      },
+    ],
+    locale: 'en_NG',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Dr. Clean | Premium Laundry',
+    description: 'Expert garment care in Nigeria. Purity in every fold.',
+    images: ['/og-image.png'],
   },
   icons: {
     icon: [
       {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
+        url: '/favicon.ico',
       },
       {
         url: '/icon.svg',
         type: 'image/svg+xml',
       },
     ],
-    apple: '/apple-icon.png',
+    apple: '/apple-touch-icon.png',
   },
 }
 

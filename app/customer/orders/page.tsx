@@ -1,5 +1,6 @@
 import { auth } from '@/auth'
 import { CustomerLayout } from '@/components/layouts/CustomerLayout'
+import { formatPrice } from '@/lib/utils'
 import Link from 'next/link'
 import { getOrders } from '@/lib/actions'
 import { Search, Filter, ChevronRight, Package, Clock, Calendar } from 'lucide-react'
@@ -88,7 +89,7 @@ export default async function CustomerOrdersPage() {
                 {/* Amount & CTA */}
                 <div className="lg:w-48 lg:text-right shrink-0 border-t lg:border-t-0 lg:border-l border-border/50 pt-6 lg:pt-0 lg:pl-8">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Total Amount</p>
-                  <p className="text-2xl font-extrabold text-foreground tracking-tighter mb-4">${order.total.toFixed(2)}</p>
+                  <p className="text-2xl font-extrabold text-foreground tracking-tighter mb-4">{formatPrice(order.total)}</p>
                   <Link 
                     href={`/customer/orders/${order.id}`}
                     className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-bold text-sm tracking-tight transition-colors group/link"

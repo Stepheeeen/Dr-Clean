@@ -1,6 +1,7 @@
 'use client'
 
 import { AdminLayout } from '@/components/layouts/AdminLayout'
+import { formatPrice } from '@/lib/utils'
 import Link from 'next/link'
 import { MOCK_ORDERS, ORDER_STATUSES } from '@/lib/mock-data'
 import { ChevronLeft } from 'lucide-react'
@@ -64,12 +65,12 @@ export default function AdminOrderDetailPage({ params }: { params: { id: string 
                   <p className="font-medium text-foreground">{item.service}</p>
                   <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                 </div>
-                <p className="font-semibold text-foreground">${(item.price * item.quantity).toFixed(2)}</p>
+                <p className="font-semibold text-foreground">{formatPrice(item.price * item.quantity)}</p>
               </div>
             ))}
             <div className="pt-3 flex items-center justify-between font-bold text-lg">
               <span>Total</span>
-              <span>${order.total.toFixed(2)}</span>
+              <span>{formatPrice(order.total)}</span>
             </div>
           </div>
         </div>

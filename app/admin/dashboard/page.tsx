@@ -1,6 +1,7 @@
 import { AdminLayout } from '@/components/layouts/AdminLayout'
 import Link from 'next/link'
 import { getDashboardStats, getOrders } from '@/lib/actions'
+import { formatPrice } from '@/lib/utils'
 import { TrendingUp, Package, Users, DollarSign } from 'lucide-react'
 
 export default async function AdminDashboard() {
@@ -15,8 +16,8 @@ export default async function AdminDashboard() {
           {[
             { label: 'Total Orders', value: stats.totalOrders, icon: Package, color: 'text-primary', bg: 'bg-primary/5' },
             { label: 'Active Orders', value: stats.activeOrders, icon: Package, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-            { label: 'Total Revenue', value: `$${stats.totalRevenue.toFixed(2)}`, icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-            { label: 'Avg Order Value', value: `$${stats.averageOrderValue.toFixed(2)}`, icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50' },
+            { label: 'Total Revenue', value: formatPrice(stats.totalRevenue), icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+            { label: 'Avg Order Value', value: formatPrice(stats.averageOrderValue), icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50' },
           ].map((kpi, i) => (
             <div key={i} className="bg-white rounded-[2rem] border border-border/50 p-8 shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 group">
               <div className="flex items-center justify-between mb-4">
@@ -69,7 +70,7 @@ export default async function AdminDashboard() {
                           <span className="text-sm font-medium">{order.user.name}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-5 text-sm font-bold">${order.total.toFixed(2)}</td>
+                      <td className="px-6 py-5 text-sm font-bold">{formatPrice(order.total)}</td>
                       <td className="px-6 py-5">
                         <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-wide shadow-sm ${
                           order.status === 'Completed' ? 'bg-emerald-100 text-emerald-800' :

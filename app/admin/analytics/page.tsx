@@ -1,5 +1,6 @@
 import { AdminLayout } from '@/components/layouts/AdminLayout'
 import { getAnalytics } from '@/lib/actions'
+import { formatPrice } from '@/lib/utils'
 import { TrendingUp, BarChart3, PieChart, Download, ArrowUpRight } from 'lucide-react'
 
 export default async function AdminAnalyticsPage() {
@@ -24,9 +25,9 @@ export default async function AdminAnalyticsPage() {
         {/* Primary KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
-            { label: 'Cumulative Revenue', value: `$${analytics.totalRevenue.toFixed(2)}`, trend: '+12.5%', color: 'text-primary', bg: 'bg-primary/5' },
+            { label: 'Cumulative Revenue', value: formatPrice(analytics.totalRevenue), trend: '+12.5%', color: 'text-primary', bg: 'bg-primary/5' },
             { label: 'Total Volume', value: analytics.totalOrders, trend: '+8.2%', color: 'text-indigo-600', bg: 'bg-indigo-50' },
-            { label: 'Average Ticket', value: `$${analytics.averageOrderValue.toFixed(2)}`, trend: '+4.1%', color: 'text-emerald-600', bg: 'bg-emerald-50' }
+            { label: 'Average Ticket', value: formatPrice(analytics.averageOrderValue), trend: '+4.1%', color: 'text-emerald-600', bg: 'bg-emerald-50' }
           ].map((stat, i) => (
             <div key={i} className="bg-white rounded-[2.5rem] border border-border/50 p-8 shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 group">
               <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest mb-4">{stat.label}</p>
@@ -57,7 +58,7 @@ export default async function AdminAnalyticsPage() {
                 <div key={day.date} className="group">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-bold text-foreground">{day.date}</span>
-                    <span className="text-sm font-extrabold text-primary">${day.revenue.toFixed(2)}</span>
+                    <span className="text-sm font-extrabold text-primary">{formatPrice(day.revenue)}</span>
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
                     <div 
