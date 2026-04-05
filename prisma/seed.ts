@@ -3,6 +3,8 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
+  console.log('Seeding data...')
+
   // Seed Services
   const services = [
     {
@@ -37,8 +39,8 @@ async function main() {
 
   for (const service of services) {
     await prisma.service.upsert({
-      where: { id: service.name }, // This won't work because id is CUID. Using name as identifier for seeding logic.
-      update: {},
+      where: { name: service.name },
+      update: service,
       create: service,
     })
   }
@@ -62,8 +64,10 @@ async function main() {
   ]
 
   for (const modifier of modifiers) {
-    await prisma.priceModifier.create({
-      data: modifier,
+    await prisma.priceModifier.upsert({
+      where: { name: modifier.name },
+      update: modifier,
+      create: modifier,
     })
   }
 
@@ -80,8 +84,10 @@ async function main() {
   ]
 
   for (const discount of discounts) {
-    await prisma.bulkDiscount.create({
-      data: discount,
+    await prisma.bulkDiscount.upsert({
+      where: { threshold: discount.threshold },
+      update: discount,
+      create: discount,
     })
   }
 
