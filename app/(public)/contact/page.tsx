@@ -94,8 +94,8 @@ export default function ContactPage() {
                 <Phone size={24} className="text-primary flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="font-semibold text-foreground mb-1">Phone</h3>
-                  <a href="tel:+1234567890" className="text-primary hover:text-primary/80">
-                    +1 (234) 567-890
+                  <a href="tel:+2348000000000" className="text-primary hover:text-primary/80">
+                    +234 (800) 000-0000
                   </a>
                 </div>
               </div>
@@ -104,8 +104,8 @@ export default function ContactPage() {
                 <Mail size={24} className="text-primary flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="font-semibold text-foreground mb-1">Email</h3>
-                  <a href="mailto:info@drclean.com" className="text-primary hover:text-primary/80">
-                    info@drclean.com
+                  <a href="mailto:hello@dr-clean.com.ng" className="text-primary hover:text-primary/80">
+                    hello@dr-clean.com.ng
                   </a>
                 </div>
               </div>
@@ -114,7 +114,7 @@ export default function ContactPage() {
                 <MapPin size={24} className="text-primary flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="font-semibold text-foreground mb-1">Address</h3>
-                  <p className="text-foreground">123 Main Street<br />City, State 12345</p>
+                  <p className="text-foreground">Lagos & Abuja, Nigeria</p>
                 </div>
               </div>
 
@@ -123,7 +123,7 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-semibold text-foreground mb-1">Business Hours</h3>
                   <p className="text-foreground">
-                    Monday - Friday: 7:00 AM - 7:00 PM<br />
+                    Monday - Friday: 8:00 AM - 6:00 PM<br />
                     Saturday: 9:00 AM - 5:00 PM<br />
                     Sunday: Closed
                   </p>

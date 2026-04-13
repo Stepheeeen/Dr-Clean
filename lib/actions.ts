@@ -3,6 +3,7 @@
 import prisma from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 import { Service } from '@/types'
+import { initializePaystackTransaction, verifyPaystackTransaction } from '@/lib/paystack'
 
 // --- Service Actions ---
 
@@ -56,10 +57,13 @@ export async function createOrder(data: {
   userId: string
   notes?: string
   scheduledPickup?: Date
+  paymentMode?: string
   items: { name: string; price: number; quantity: number }[]
 }) {
   try {
-    const total = data.items.reduce((acc, item) => acc + item.price * item.quantity, 0)
+    const subtotal = data.items.reduce((acc, item) => acc + item.price * item.quantity, 0)
+    const platformFee = data.paymentMode === 'Online' ? subtotal * 0.05 : 0
+    const total = subtotal + platformFee
     
     // Generate a simple order number
     const count = await prisma.order.count()
@@ -72,6 +76,8 @@ export async function createOrder(data: {
         notes: data.notes,
         scheduledPickup: data.scheduledPickup,
         total,
+        platformFee,
+        paymentMode: data.paymentMode || 'Cash',
         status: 'Pending',
         items: {
           create: data.items,
@@ -85,6 +91,59 @@ export async function createOrder(data: {
   } catch (error) {
     console.error('Error creating order:', error)
     return { success: false, error: 'Failed to create order' }
+  }
+}
+
+export async function initializePayment(orderId: string, email: string) {
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId }
+    })
+
+    if (!order) throw new Error("Order not found")
+
+    const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/customer/orders/${orderId}?payment_verify=true`
+    const reference = `ORD-${orderId}-${Date.now()}`
+
+    const data = await initializePaystackTransaction({
+      email,
+      amount: Math.round(order.total * 100), // Convert to kobo
+      reference,
+      callback_url: callbackUrl,
+    })
+
+    // Update order with reference
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { paymentReference: reference }
+    })
+
+    return { success: true, authorization_url: data.authorization_url }
+  } catch (error) {
+    console.error('Error initializing payment:', error)
+    return { success: false, error: 'Failed to initialize payment' }
+  }
+}
+
+export async function verifyPayment(reference: string) {
+  try {
+    const data = await verifyPaystackTransaction(reference)
+
+    if (data.status === 'success') {
+      const order = await prisma.order.update({
+        where: { paymentReference: reference },
+        data: { paymentStatus: 'Paid', status: 'Processing' }
+      })
+
+      revalidatePath('/admin/orders')
+      revalidatePath(`/customer/orders/${order.id}`)
+      return { success: true, order }
+    }
+
+    return { success: false, error: 'Payment not successful' }
+  } catch (error) {
+    console.error('Error verifying payment:', error)
+    return { success: false, error: 'Failed to verify payment' }
   }
 }
 

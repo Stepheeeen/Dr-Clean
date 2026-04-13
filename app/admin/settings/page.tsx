@@ -70,7 +70,7 @@ export default function AdminSettingsPage() {
               <label className="block text-sm font-semibold text-foreground mb-2">Phone</label>
               <input
                 type="tel"
-                defaultValue="+1 (234) 567-890"
+                defaultValue="+234 (800) 000-0000"
                 className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -78,7 +78,7 @@ export default function AdminSettingsPage() {
               <label className="block text-sm font-semibold text-foreground mb-2">Email</label>
               <input
                 type="email"
-                defaultValue="info@drclean.com"
+                defaultValue="hello@dr-clean.com.ng"
                 className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -86,7 +86,7 @@ export default function AdminSettingsPage() {
               <label className="block text-sm font-semibold text-foreground mb-2">Address</label>
               <input
                 type="text"
-                defaultValue="123 Main Street, City, State 12345"
+                defaultValue="Lagos & Abuja, Nigeria"
                 className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>

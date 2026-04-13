@@ -83,6 +83,12 @@ model Order {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
+  // Payment info
+  paymentStatus   String   @default("Pending") // Pending, Paid, Failed
+  paymentMode     String   @default("Cash")    // Cash, Online
+  paymentReference String?  @unique             // Paystack reference
+  platformFee     Float    @default(0)         // 5% split for platform
+  
   // Relations
   userId          String
   user            User     @relation(fields: [userId], references: [id])

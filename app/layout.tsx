@@ -1,10 +1,16 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
+
+export const viewport: Viewport = {
+  themeColor: '#2563eb',
+  width: 'device-width',
+  initialScale: 1,
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://dr-clean.com.ng'),
@@ -13,10 +19,21 @@ export const metadata: Metadata = {
     template: '%s | Dr. Clean'
   },
   description: 'Pure excellence in laundry and dry cleaning. Experience premium, reliable, and editorial-quality garment care in Lagos and Abuja. Pickup and delivery available.',
-  keywords: ['Laundry service Lagos', 'Dry cleaning Abuja', 'Premium laundry Nigeria', 'Garment care', 'Dr. Clean laundry'],
+  keywords: ['Laundry service Lagos', 'Dry cleaning Abuja', 'Premium laundry Nigeria', 'Garment care', 'Dr. Clean laundry', 'Lagos dry cleaners', 'Abuja laundry service'],
   authors: [{ name: 'Dr. Clean Team' }],
   creator: 'Dr. Clean',
   publisher: 'Dr. Clean',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   formatDetection: {
     email: false,
     address: false,
@@ -55,6 +72,12 @@ export const metadata: Metadata = {
       },
     ],
     apple: '/apple-touch-icon.png',
+  },
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Dr. Clean',
   },
 }
 

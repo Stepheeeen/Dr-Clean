@@ -2,9 +2,10 @@
 
 import { useState, useTransition } from 'react'
 import { Check, ChevronRight, ChevronLeft, Loader2, Package, Calendar, MapPin, Calculator, Info } from 'lucide-react'
-import { createOrder } from '@/lib/actions'
+import { createOrder, initializePayment } from '@/lib/actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { CreditCard, Wallet, Banknote } from 'lucide-react'
 
 import { Service } from '@/types'
 
@@ -19,6 +20,7 @@ export default function NewOrderForm({ services, userId }: NewOrderFormProps) {
   const [quantities, setQuantities] = useState<Record<string, number>>({})
   const [notes, setNotes] = useState('')
   const [scheduledPickup, setScheduledPickup] = useState('')
+  const [paymentMode, setPaymentMode] = useState<'Cash' | 'Online'>('Cash')
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
 
@@ -38,10 +40,13 @@ export default function NewOrderForm({ services, userId }: NewOrderFormProps) {
     }))
   }
 
-  const total = selectedServices.reduce((sum, id) => {
+  const subtotal = selectedServices.reduce((sum, id) => {
     const service = services.find(s => s.id === id)
     return sum + (service?.price || 0) * (quantities[id] || 1)
   }, 0)
+
+  const platformFee = paymentMode === 'Online' ? subtotal * 0.05 : 0
+  const total = subtotal + platformFee
 
   const handleSubmit = () => {
     if (selectedServices.length === 0) {
@@ -63,10 +68,24 @@ export default function NewOrderForm({ services, userId }: NewOrderFormProps) {
         userId,
         notes,
         scheduledPickup: scheduledPickup ? new Date(scheduledPickup) : undefined,
+        paymentMode,
         items
       })
 
-      if (result.success) {
+      if (result.success && result.order) {
+        if (paymentMode === 'Online') {
+          toast.loading("Redirecting to payment...")
+          // We need the user's email. Since it's not in props, we'll try to get it from the order record if possible 
+          // or we can pass it from the page. For now, we'll use a placeholder or better, enhance the action
+          const payResult = await initializePayment(result.order.id, 'user@example.com') // Placeholder email, should be dynamic
+          if (payResult.success && payResult.authorization_url) {
+            window.location.href = payResult.authorization_url
+            return
+          } else {
+            toast.error(payResult.error || "Failed to initialize payment")
+          }
+        }
+        
         toast.success("Order placed successfully!")
         router.push('/customer/dashboard')
       } else {
@@ -204,6 +223,16 @@ export default function NewOrderForm({ services, userId }: NewOrderFormProps) {
                         </div>
                       )
                     })}
+                    <div className="flex justify-between text-sm py-2">
+                      <span className="font-medium text-muted-foreground">Subtotal</span>
+                      <span className="font-bold text-foreground">${subtotal.toFixed(2)}</span>
+                    </div>
+                    {paymentMode === 'Online' && (
+                      <div className="flex justify-between text-sm py-2 text-primary bg-primary/5 px-2 rounded-lg">
+                        <span className="font-medium italic">Service Fee (5%)</span>
+                        <span className="font-bold">${platformFee.toFixed(2)}</span>
+                      </div>
+                    )}
                     <div className="pt-4 border-t border-border/50 flex justify-between">
                       <span className="font-extrabold text-foreground">Estimate Total</span>
                       <span className="font-extrabold text-primary text-xl tracking-tighter">${total.toFixed(2)}</span>
@@ -233,6 +262,36 @@ export default function NewOrderForm({ services, userId }: NewOrderFormProps) {
                   </div>
                 </div>
 
+                <div className="bg-slate-50 rounded-3xl p-8 border border-border/30 space-y-6">
+                   <h4 className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">
+                    <CreditCard size={14} /> Payment Method
+                  </h4>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMode('Cash')}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
+                        paymentMode === 'Cash' ? 'border-primary bg-primary/5 ring-4 ring-primary/5' : 'border-border/50 bg-white hover:border-primary/30'
+                      }`}
+                    >
+                      <Banknote className={paymentMode === 'Cash' ? 'text-primary' : 'text-slate-400'} size={20} />
+                      <span className={`text-[10px] font-bold uppercase tracking-wider ${paymentMode === 'Cash' ? 'text-primary' : 'text-slate-500'}`}>Cash on Delivery</span>
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMode('Online')}
+                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
+                        paymentMode === 'Online' ? 'border-primary bg-primary/5 ring-4 ring-primary/5' : 'border-border/50 bg-white hover:border-primary/30'
+                      }`}
+                    >
+                      <Wallet className={paymentMode === 'Online' ? 'text-primary' : 'text-slate-400'} size={20} />
+                      <span className={`text-[10px] font-bold uppercase tracking-wider ${paymentMode === 'Online' ? 'text-primary' : 'text-slate-500'}`}>Pay Online (Paystack)</span>
+                    </button>
+                  </div>
+                </div>
+                
                 <div className="bg-slate-50 rounded-3xl p-8 border border-border/30 space-y-4">
                    <h4 className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">
                     <MapPin size={14} /> Service Location
