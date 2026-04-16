@@ -53,9 +53,9 @@ export function CustomerLayout({ children }: CustomerLayoutProps) {
                         : 'text-foreground/60 hover:text-primary hover:bg-secondary/50'
                     }`}
                   >
-                    <item.icon size={14} className={isActive && !item.highlight ? 'text-primary' : ''} />
+                    <item.icon size={14} className={isActive ? 'text-primary' : ''} />
                     {item.label}
-                    {isActive && !item.highlight && (
+                    {isActive && (
                       <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary animate-in fade-in slide-in-from-left-full duration-500" />
                     )}
                   </Link>

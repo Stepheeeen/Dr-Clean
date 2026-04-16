@@ -49,7 +49,7 @@ export default async function ServicesPage() {
                   <div className="text-right">
                     <div className="text-[10px] uppercase tracking-[0.3em] font-black text-primary mb-2">{service.category}</div>
                     <div className="text-3xl font-black tracking-tighter text-foreground">
-                      {formatPrice(service.price)} <span className="text-xs uppercase tracking-widest font-bold opacity-40">/ {service.unit}</span>
+                      {formatPrice(service.dryCleanPrice)}
                     </div>
                   </div>
                 </div>

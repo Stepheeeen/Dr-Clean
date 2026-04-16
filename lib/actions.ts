@@ -232,7 +232,7 @@ export async function deleteOrder(orderId: string) {
     }
 
     // Only Admin or the Order Owner can delete
-    if (user.role !== 'ADMIN' && order.userId !== user.id) {
+    if ((user as any).role !== 'ADMIN' && order.userId !== user.id) {
       return { success: false, error: "Unauthorized" }
     }
 

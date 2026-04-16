@@ -1,4 +1,18 @@
+'use client'
+
+import { useTransition, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import Link from 'next/link'
+import { ArrowLeft, Mail, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 import { PublicLayout } from '@/components/layouts/PublicLayout'
+import { initiatePasswordReset } from '@/lib/auth-actions'
+
+const ForgotPasswordSchema = z.object({
+  email: z.string().email("Invalid email coordinate"),
+})
 
 export default function ForgotPasswordPage() {
   const [isPending, startTransition] = useTransition()
@@ -112,7 +126,5 @@ export default function ForgotPasswordPage() {
         </div>
       </section>
     </PublicLayout>
-  )
-}
   )
 }

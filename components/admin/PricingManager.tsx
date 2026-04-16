@@ -24,7 +24,7 @@ export function PricingManager({ services, modifiers, bulkDiscounts }: PricingMa
     const values = {
       name: formData.get('name') as string,
       price: parseFloat(formData.get('price') as string),
-      type: formData.get('type') as string,
+      type: formData.get('type') as 'SURCHARGE' | 'DISCOUNT',
     }
 
     startTransition(async () => {

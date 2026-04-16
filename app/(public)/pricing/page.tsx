@@ -55,10 +55,18 @@ export default async function PricingPage() {
                   <h4 className="text-xl font-black tracking-tighter uppercase">{service.name}</h4>
                 </div>
                 
-                <div className="mb-12">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-black tracking-tighter text-foreground">{formatPrice(service.price)}</span>
-                    <span className="text-[10px] uppercase tracking-widest font-black opacity-40">/ {service.unit}</span>
+                <div className="mb-12 space-y-6">
+                  <div>
+                    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-2">Dry Clean</p>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-black tracking-tighter text-foreground">{formatPrice(service.dryCleanPrice)}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.3em] mb-2">Ironing Only</p>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-black tracking-tighter text-foreground">{formatPrice(service.ironingPrice)}</span>
+                    </div>
                   </div>
                 </div>
 
