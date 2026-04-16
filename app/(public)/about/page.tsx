@@ -6,63 +6,71 @@ export default function AboutPage() {
   return (
     <PublicLayout>
       {/* Header */}
-      <section className="pt-16 pb-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-background to-secondary">
-        <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">About Dr. Clean</h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Your trusted partner in professional laundry care since 2014
+      <section className="pt-32 pb-24 px-6 lg:px-12 bg-background border-b border-border">
+        <div className="max-w-7xl mx-auto text-left">
+          <h2 className="text-[10px] uppercase tracking-[0.4em] font-black text-primary mb-6">Genesis</h2>
+          <h1 className="text-6xl sm:text-8xl font-black text-foreground mb-10 tracking-tighter leading-[0.9] uppercase">
+            PURE <br /><span className="font-light italic">HERITAGE.</span>
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl leading-relaxed font-medium">
+            Redefining professional garment care since 2014.
           </p>
         </div>
       </section>
 
       {/* Our Story */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-foreground mb-6">Our Story</h2>
-          <div className="space-y-4 text-foreground leading-relaxed">
-            <p>
-              Founded in 2014, Dr. Clean began with a simple mission: to provide busy professionals and families with
-              premium laundry and dry cleaning services that respect both their clothes and their time. What started as
-              a small operation has grown into the preferred laundry service for hundreds of satisfied customers.
-            </p>
-            <p>
-              We believe that everyone deserves access to professional cleaning services without the hassle of
-              traditional laundromats or dry cleaners. That&apos;s why we developed our convenient pickup and delivery
-              service, allowing our customers to focus on what matters most while we take care of their laundry.
-            </p>
-            <p>
-              Today, Dr. Clean is proud to be recognized as the leading laundry service in our community, known for
-              our attention to detail, reliability, and customer-first approach.
+      <section className="py-32 px-6 lg:px-12 bg-background">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-24">
+          <div>
+            <h2 className="text-[10px] uppercase tracking-[0.4em] font-black text-primary mb-12">The Narrative</h2>
+            <div className="space-y-10 text-foreground text-xl leading-relaxed font-medium italic">
+              <p>
+                Founded in 2014, Dr. Clean began with a simple mission: to approach garment care with the same precision and obsession as fine architecture. 
+              </p>
+              <p>
+                What started as a specialized atelier has evolved into the preferred guardian for the region's most precious wardrobes. We believe that professional cleaning is not just a service—it is a preservation of identity.
+              </p>
+            </div>
+          </div>
+          <div className="aspect-square bg-secondary border border-border flex items-center justify-center p-20 relative overflow-hidden">
+            <div className="text-[15rem] font-black text-foreground/5 absolute -bottom-10 -right-10 pointer-events-none tracking-tighter">DC</div>
+            <p className="relative z-10 text-muted-foreground text-lg leading-relaxed font-medium">
+              Today, Dr. Clean stands as a benchmark of excellence, recognized for an uncompromising editorial approach to garment restoration.
             </p>
           </div>
         </div>
       </section>
 
       {/* Our Values */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-secondary">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-bold text-foreground mb-12 text-center">Our Values</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-lg p-8 border border-border text-center">
-              <Award size={40} className="text-primary mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-foreground mb-2">Excellence</h3>
-              <p className="text-muted-foreground">
-                We&apos;re committed to delivering the highest quality laundry care every time. Your satisfaction
-                is our standard.
+      <section className="py-32 px-6 lg:px-12 bg-[#111111] text-white">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-[10px] uppercase tracking-[0.4em] font-black text-primary mb-24 text-center">Principles</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
+            <div className="group text-center">
+              <div className="w-20 h-20 border border-white/10 mx-auto mb-10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500">
+                <Award size={32} />
+              </div>
+              <h3 className="text-xl font-black tracking-tighter mb-4 uppercase">Excellence</h3>
+              <p className="text-muted-foreground font-medium leading-relaxed">
+                Higher quality is not an objective—it is our base condition.
               </p>
             </div>
-            <div className="bg-white rounded-lg p-8 border border-border text-center">
-              <Users size={40} className="text-primary mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-foreground mb-2">Customer First</h3>
-              <p className="text-muted-foreground">
-                Your needs drive our decisions. We listen, adapt, and go the extra mile to exceed your expectations.
+            <div className="group text-center">
+              <div className="w-20 h-20 border border-white/10 mx-auto mb-10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500">
+                <Users size={32} />
+              </div>
+              <h3 className="text-xl font-black tracking-tighter mb-4 uppercase">Discretion</h3>
+              <p className="text-muted-foreground font-medium leading-relaxed">
+                We manage your wardrobe with the ultimate respect for your time and privacy.
               </p>
             </div>
-            <div className="bg-white rounded-lg p-8 border border-border text-center">
-              <Leaf size={40} className="text-primary mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-foreground mb-2">Sustainability</h3>
-              <p className="text-muted-foreground">
-                We use eco-friendly detergents and practices to protect your clothes and our environment.
+            <div className="group text-center">
+              <div className="w-20 h-20 border border-white/10 mx-auto mb-10 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all duration-500">
+                <Leaf size={32} />
+              </div>
+              <h3 className="text-xl font-black tracking-tighter mb-4 uppercase">Purity</h3>
+              <p className="text-muted-foreground font-medium leading-relaxed">
+                Utilizing premium, environmentally aligned solutions exclusively.
               </p>
             </div>
           </div>
@@ -70,25 +78,25 @@ export default function AboutPage() {
       </section>
 
       {/* Why Choose Us */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-foreground mb-12 text-center">Why Choose Dr. Clean?</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <section className="py-32 px-6 lg:px-12 bg-background">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-[10px] uppercase tracking-[0.4em] font-black text-primary mb-24 text-center">Metrics</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-24 gap-y-16">
             {[
-              'Over 10 years of professional experience',
-              'Expert handling of all fabric types',
-              'Convenient pickup and delivery service',
-              'Eco-friendly cleaning solutions',
-              '24-hour express service available',
-              'Transparent pricing with no hidden fees',
-              'Professional team trained in stain removal',
-              'Secure payment options',
+              'Decade of specialized architectural care',
+              'Sovereign handling of bespoke fabrics',
+              'Seamless digital concierge system',
+              'Environmentally aligned restoration',
+              'Priority 24H sessions available',
+              'Absolute pricing transparency',
+              'Stain analysis by restoration experts',
+              'Advanced digital ledger payments',
             ].map((reason, idx) => (
-              <div key={idx} className="flex gap-4">
-                <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 text-sm font-bold">
-                  ✓
+              <div key={idx} className="flex gap-8 group">
+                <div className="text-xs font-black text-primary tracking-widest pt-1 px-4 border-l border-border group-hover:border-primary transition-all duration-500">
+                  {idx + 1 < 10 ? `0${idx + 1}` : idx + 1}
                 </div>
-                <p className="text-foreground font-medium">{reason}</p>
+                <p className="text-foreground text-lg font-black tracking-tighter uppercase">{reason}</p>
               </div>
             ))}
           </div>
@@ -96,17 +104,17 @@ export default function AboutPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-primary text-primary-foreground text-center">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-3xl font-bold mb-4">Ready to Experience the Difference?</h2>
-          <p className="text-lg mb-8 text-primary-foreground/90">
-            Join hundreds of customers who trust Dr. Clean with their laundry.
+      <section className="py-48 px-6 lg:px-12 bg-background border-t border-border text-center overflow-hidden">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-6xl sm:text-8xl font-black text-foreground mb-12 tracking-tighter uppercase leading-[0.9]">EMARK ON THE <br /><span className="font-light italic text-primary">JOURNEY.</span></h2>
+          <p className="text-xl text-muted-foreground mb-20 max-w-2xl mx-auto font-medium">
+            Join the most exclusive collective in garment care.
           </p>
           <Link
             href="/register"
-            className="inline-block bg-primary-foreground text-primary px-8 py-3 rounded-lg hover:bg-primary-foreground/90 transition-colors font-semibold"
+            className="bg-foreground text-background px-16 py-6 font-black uppercase tracking-[0.4em] text-xs hover:bg-primary hover:text-white transition-all duration-500"
           >
-            Get Started Today
+            Initiate Session
           </Link>
         </div>
       </section>

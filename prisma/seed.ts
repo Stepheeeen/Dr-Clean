@@ -3,37 +3,47 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
+  console.log('Clearing old data...')
+  await prisma.service.deleteMany()
+  
   console.log('Seeding data...')
 
-  // Seed Services
+  // Seed Item-based Services
   const services = [
     {
-      name: 'Washing',
-      description: 'Professional washing service for all fabric types',
-      price: 2500, // In Naira
-      unit: 'kg',
-      category: 'Laundry',
+      name: 'Shirt',
+      description: 'Standard cotton or formal shirts',
+      dryCleanPrice: 2000,
+      ironingPrice: 500,
+      category: 'Clothing',
     },
     {
-      name: 'Ironing & Pressing',
-      description: 'Expert ironing for a crisp, polished look',
-      price: 1500,
-      unit: 'item',
-      category: 'Laundry',
+      name: 'Gown',
+      description: 'Elegant gowns or long dresses',
+      dryCleanPrice: 5000,
+      ironingPrice: 1500,
+      category: 'Clothing',
     },
     {
-      name: 'Folding',
-      description: 'Neat folding and organization service',
-      price: 1000,
-      unit: 'item',
-      category: 'Laundry',
+      name: 'Trousers',
+      description: 'Chinos, jeans, or formal trousers',
+      dryCleanPrice: 1500,
+      ironingPrice: 500,
+      category: 'Clothing',
     },
     {
-      name: 'Dry Cleaning',
-      description: 'Premium dry cleaning for delicate items',
-      price: 5000,
-      unit: 'item',
-      category: 'Dry Cleaning',
+      name: 'Suit Set',
+      description: 'Full suit including jacket and trousers',
+      dryCleanPrice: 8000,
+      ironingPrice: 2500,
+      category: 'Clothing',
+    },
+    {
+      name: 'Bedding Set',
+      description: 'Bedsheet and pillowcases',
+      dryCleanPrice: 4000,
+      ironingPrice: 1000,
+      category: 'Household',
     },
   ]
 
@@ -90,6 +100,31 @@ async function main() {
       create: discount,
     })
   }
+
+  // Seed Global Settings
+  await prisma.settings.upsert({
+    where: { key: 'global' },
+    update: {},
+    create: {
+      key: 'global',
+      heroHeadline: 'Premium Laundry Care Delivered',
+      heroSubheadline: 'Professional cleaning with convenient pickup and delivery service',
+      aboutHeadline: 'About Dr. Clean',
+      aboutDescription: 'With over 10 years of experience in professional laundry care, Dr. Clean has become the trusted choice for busy professionals and families. We combine traditional cleaning expertise with modern convenience.',
+      phone: '+234 (800) 000-0000',
+      email: 'hello@dr-clean.com.ng',
+      address: 'Lagos & Abuja, Nigeria',
+      businessHours: {
+        Monday: { open: '07:00', close: '19:00' },
+        Tuesday: { open: '07:00', close: '19:00' },
+        Wednesday: { open: '07:00', close: '19:00' },
+        Thursday: { open: '07:00', close: '19:00' },
+        Friday: { open: '07:00', close: '19:00' },
+        Saturday: { open: '08:00', close: '17:00' },
+        Sunday: { open: '00:00', close: '00:00' },
+      }
+    }
+  })
 
   console.log('Seed data created successfully!')
 }

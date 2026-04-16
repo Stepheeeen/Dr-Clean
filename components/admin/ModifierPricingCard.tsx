@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { updatePriceModifier } from "@/lib/pricing-actions"
+import { updatePriceModifier, deletePriceModifier } from "@/lib/pricing-actions"
 import { formatPrice } from "@/lib/utils"
 import { toast } from "sonner"
-import { Loader2 } from "lucide-react"
+import { Loader2, Trash2 } from "lucide-react"
 
 interface ModifierPricingCardProps {
   modifier: {
@@ -24,78 +24,99 @@ export function ModifierPricingCard({ modifier }: ModifierPricingCardProps) {
 
   const handleSave = async () => {
     setIsPending(true)
-    const result = await updatePriceModifier({
+    const res = await updatePriceModifier({
       id: modifier.id,
       price: parseFloat(price),
     })
     setIsPending(false)
 
-    if (result.success) {
-      toast.success("Modifier updated successfully")
+    if (res.success) {
+      toast.success(res.success)
       setIsEditing(false)
     } else {
-      toast.error(result.error || "Failed to update modifier")
+      toast.error(res.error)
     }
   }
 
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this modifier?")) return
+    setIsPending(true)
+    const res = await deletePriceModifier(modifier.id)
+    setIsPending(false)
+    if (res.success) toast.success(res.success)
+    else toast.error(res.error)
+  }
+
   return (
-    <div className="flex items-center justify-between p-4 border border-border rounded-lg bg-card hover:border-primary/30 transition-colors">
-      <div className="flex-1">
-        <p className="font-semibold text-foreground">{modifier.name}</p>
-        <p className="text-sm text-muted-foreground">{modifier.description}</p>
+    <div className="flex flex-col md:flex-row md:items-center justify-between p-8 border border-foreground bg-background hover:bg-secondary/10 transition-all duration-500 group">
+      <div className="flex-1 mb-6 md:mb-0">
+        <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-2 italic">{modifier.type} PROTOCOL</p>
+        <p className="text-xl font-black text-foreground uppercase tracking-tight group-hover:text-primary transition-colors">{modifier.name}</p>
+        <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] mt-3 italic line-clamp-1">{modifier.description}</p>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-8">
         {isEditing ? (
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                {modifier.valueType === "FIXED" ? "₦" : ""}
-              </span>
+          <div className="flex items-center gap-6">
+            <div className="relative group/input">
+              {modifier.valueType === "FIXED" && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px] font-black">₦</span>
+              )}
               <input
                 type="number"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                className={`pr-3 py-2 border border-border rounded-lg w-32 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all ${
-                  modifier.valueType === "FIXED" ? "pl-7" : "px-3"
+                className={`pr-4 py-2 bg-transparent border-b border-border focus:border-foreground text-sm font-black outline-none transition-all w-32 uppercase tracking-widest ${
+                  modifier.valueType === "FIXED" ? "pl-6" : "pl-0"
                 }`}
                 placeholder="0.00"
               />
               {modifier.valueType === "PERCENTAGE" && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+                <span className="absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px] font-black">%</span>
               )}
             </div>
-            <button
-              onClick={handleSave}
-              disabled={isPending}
-              className="bg-primary text-primary-foreground px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2"
-            >
-              {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-              Save
-            </button>
-            <button
-              onClick={() => setIsEditing(false)}
-              className="text-muted-foreground hover:text-foreground font-medium px-2"
-            >
-              Cancel
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleSave}
+                disabled={isPending}
+                className="bg-foreground text-background px-8 py-3 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all duration-500 disabled:opacity-50 flex items-center justify-center gap-3"
+              >
+                {isPending && <Loader2 className="w-3 h-3 animate-spin" />}
+                Commit
+              </button>
+              <button
+                onClick={() => setIsEditing(false)}
+                className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Void
+              </button>
+            </div>
           </div>
         ) : (
-          <>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl font-bold text-primary">
+          <div className="flex items-center gap-8">
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-black text-foreground tracking-tighter uppercase font-mono">
                 {modifier.valueType === "FIXED" 
                   ? formatPrice(modifier.price) 
                   : `${modifier.price}%`}
               </span>
             </div>
-            <button
-              onClick={() => setIsEditing(true)}
-              className="text-primary hover:text-primary/80 font-semibold px-4 py-2"
-            >
-              Edit
-            </button>
-          </>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setIsEditing(true)}
+                className="border border-foreground px-8 py-3 text-[10px] font-black uppercase tracking-[0.4em] hover:bg-foreground hover:text-background transition-all duration-500"
+              >
+                Modify
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={isPending}
+                className="w-12 h-12 border border-border flex items-center justify-center text-red-600 hover:bg-red-600 hover:text-white transition-all duration-500"
+              >
+                {isPending ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>

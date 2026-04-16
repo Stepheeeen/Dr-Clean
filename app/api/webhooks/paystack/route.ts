@@ -32,8 +32,17 @@ export async function POST(req: Request) {
       const reference = data.reference;
 
       // Update order status
+      const existingOrder = await prisma.order.findFirst({
+        where: { paymentReference: reference }
+      });
+
+      if (!existingOrder) {
+        console.warn(`Order not found for reference: ${reference}`);
+        return NextResponse.json({ status: 'Order not found' });
+      }
+
       const order = await prisma.order.update({
-        where: { paymentReference: reference },
+        where: { id: existingOrder.id },
         data: { 
           paymentStatus: 'Paid',
           status: 'Processing'

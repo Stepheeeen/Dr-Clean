@@ -2,8 +2,8 @@ export interface Service {
   id: string;
   name: string;
   description: string;
-  price: number;
-  unit: string;
+  dryCleanPrice: number;
+  ironingPrice: number;
   category: string | null;
   isActive: boolean;
   createdAt: Date;

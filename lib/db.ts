@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client' // Updated for schema change
 
 const prismaClientSingleton = () => {
   return new PrismaClient()

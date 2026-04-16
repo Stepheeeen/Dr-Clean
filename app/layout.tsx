@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
-import './globals.css'
+import { Inter } from 'next/font/google'
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
+const inter = Inter({ 
+  subsets: ["latin"],
+  variable: '--font-inter',
+  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900']
+});
 
 export const viewport: Viewport = {
   themeColor: '#2563eb',
@@ -81,7 +82,11 @@ export const metadata: Metadata = {
   },
 }
 
+import { Analytics } from '@vercel/analytics/next'
+import './globals.css'
+
 import { Toaster } from 'sonner'
+import { SessionProvider } from '@/components/providers/SessionProvider'
 
 export default function RootLayout({
   children,
@@ -89,11 +94,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className="font-sans antialiased">
-        <Toaster position="top-right" expand={true} richColors />
-        {children}
-        {process.env.NODE_ENV === 'production' && <Analytics />}
+    <html lang="en" className={`${inter.variable}`}>
+      <body className="font-sans antialiased overflow-x-hidden selection:bg-primary/20">
+        <SessionProvider>
+          <Toaster position="top-right" expand={true} richColors />
+          {children}
+          {process.env.NODE_ENV === 'production' && <Analytics />}
+        </SessionProvider>
       </body>
     </html>
   )

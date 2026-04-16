@@ -6,144 +6,203 @@ import { createOrder, initializePayment } from '@/lib/actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { CreditCard, Wallet, Banknote } from 'lucide-react'
+import { formatPrice } from '@/lib/utils'
 
 import { Service } from '@/types'
 
 interface NewOrderFormProps {
   services: Service[]
   userId: string
+  email: string
+  bulkDiscounts?: any[]
 }
 
-export default function NewOrderForm({ services, userId }: NewOrderFormProps) {
+export default function NewOrderForm({ services, userId, email, bulkDiscounts = [] }: NewOrderFormProps) {
   const [step, setStep] = useState(1)
   const [selectedServices, setSelectedServices] = useState<string[]>([])
-  const [quantities, setQuantities] = useState<Record<string, number>>({})
+  const [itemSelections, setItemSelections] = useState<Record<string, { type: 'DryClean' | 'Ironing', quantity: number }>>({})
   const [notes, setNotes] = useState('')
   const [scheduledPickup, setScheduledPickup] = useState('')
-  const [paymentMode, setPaymentMode] = useState<'Cash' | 'Online'>('Cash')
+  const [isUrgent, setIsUrgent] = useState(false)
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
 
-  const toggleService = (id: string) => {
-    setSelectedServices(prev => 
-      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
-    )
-    if (!quantities[id]) {
-      setQuantities(prev => ({ ...prev, [id]: 1 }))
-    }
+  const toggleItem = (id: string) => {
+    setSelectedServices(prev => {
+      const isSelected = prev.includes(id)
+      if (isSelected) {
+        const newSelected = prev.filter(s => s !== id)
+        const newItemSelections = { ...itemSelections }
+        delete newItemSelections[id]
+        setItemSelections(newItemSelections)
+        return newSelected
+      } else {
+        setItemSelections(prevSel => ({
+          ...prevSel,
+          [id]: { type: 'DryClean', quantity: 1 }
+        }))
+        return [...prev, id]
+      }
+    })
   }
 
-  const updateQuantity = (id: string, delta: number) => {
-    setQuantities(prev => ({
+  const updateSelection = (id: string, updates: Partial<{ type: 'DryClean' | 'Ironing', quantity: number }>) => {
+    setItemSelections(prev => ({
       ...prev,
-      [id]: Math.max(1, (prev[id] || 1) + delta)
+      [id]: { ...prev[id], ...updates }
     }))
   }
 
   const subtotal = selectedServices.reduce((sum, id) => {
     const service = services.find(s => s.id === id)
-    return sum + (service?.price || 0) * (quantities[id] || 1)
+    const selection = itemSelections[id]
+    if (!service || !selection) return sum
+    const price = selection.type === 'DryClean' ? service.dryCleanPrice : service.ironingPrice
+    return sum + price * selection.quantity
   }, 0)
 
-  const platformFee = paymentMode === 'Online' ? subtotal * 0.05 : 0
-  const total = subtotal + platformFee
+  const activeDiscount = bulkDiscounts
+    .filter(d => d.isActive && subtotal >= d.threshold)
+    .sort((a, b) => b.threshold - a.threshold)[0]
+
+  const discountAmount = activeDiscount ? (subtotal * (activeDiscount.percentage / 100)) : 0
+  const subtotalAfterDiscount = subtotal - discountAmount
+
+  const platformFee = subtotalAfterDiscount * 0.05
+  const urgentFee = isUrgent ? (subtotalAfterDiscount * 0.15) : 0
+  const total = subtotalAfterDiscount + platformFee + urgentFee
 
   const handleSubmit = () => {
+    // 1. Clear any ghost toasts from previous interactions
+    toast.dismiss()
+
     if (selectedServices.length === 0) {
-      toast.error("Please select at least one service")
+      toast.error("PLEASE SELECT ITEMS FOR PROCESSING")
       return
+    }
+
+    if (scheduledPickup) {
+      const pickupDate = new Date(scheduledPickup)
+      const day = pickupDate.getDay()
+      const hours = pickupDate.getHours()
+      const minutes = pickupDate.getMinutes()
+      const timeInMinutes = hours * 60 + minutes
+
+      // Sunday restriction (0 is Sunday)
+      if (day === 0) {
+        toast.error("SUNDAYS ARE RESERVED FOR FACILITY MAINTENANCE. PLEASE SELECT ANOTHER DAY.")
+        return
+      }
+
+      // Time restriction (8:30 AM = 510 mins, 8:00 PM = 1200 mins)
+      if (timeInMinutes < 510 || timeInMinutes > 1200) {
+        toast.error("RESTRICTED HOURS: PICKUP WINDOW IS 08:30 AM TO 08:00 PM.")
+        return
+      }
     }
 
     startTransition(async () => {
       const items = selectedServices.map(id => {
         const service = services.find(s => s.id === id)!
+        const selection = itemSelections[id]
+        const price = selection.type === 'DryClean' ? service.dryCleanPrice : service.ironingPrice
         return {
           name: service.name,
-          price: service.price,
-          quantity: quantities[id] || 1
+          price: price,
+          quantity: selection.quantity,
+          serviceType: selection.type
         }
       })
 
-      const result = await createOrder({
-        userId,
-        notes,
-        scheduledPickup: scheduledPickup ? new Date(scheduledPickup) : undefined,
-        paymentMode,
-        items
-      })
+      const orderPromise = (async () => {
+        // 1. Create the order
+        const result = await createOrder({
+          userId,
+          notes,
+          scheduledPickup: scheduledPickup ? new Date(scheduledPickup) : undefined,
+          isUrgent,
+          items
+        })
 
-      if (result.success && result.order) {
-        if (paymentMode === 'Online') {
-          toast.loading("Redirecting to payment...")
-          // We need the user's email. Since it's not in props, we'll try to get it from the order record if possible 
-          // or we can pass it from the page. For now, we'll use a placeholder or better, enhance the action
-          const payResult = await initializePayment(result.order.id, 'user@example.com') // Placeholder email, should be dynamic
-          if (payResult.success && payResult.authorization_url) {
-            window.location.href = payResult.authorization_url
-            return
-          } else {
-            toast.error(payResult.error || "Failed to initialize payment")
-          }
+        if (!result.success || !result.order) {
+          throw new Error(result.error || "Failed to place order")
         }
+
+        // 2. Initialize payment
+        const payResult = await initializePayment(result.order.id, email)
         
-        toast.success("Order placed successfully!")
-        router.push('/customer/dashboard')
-      } else {
-        toast.error(result.error || "Failed to place order")
-      }
+        if (!payResult.success || !payResult.authorization_url) {
+          throw new Error(payResult.error || "Payment initialization failed")
+        }
+
+        return payResult.authorization_url
+      })()
+
+      toast.promise(orderPromise, {
+        loading: 'SECURING YOUR ORDER ARCHITECTURE...',
+        success: (url) => {
+          setTimeout(() => {
+            window.location.href = url
+          }, 1500)
+          return 'ORDER VESTED. REDIRECTING TO SECURE PAYMENT...'
+        },
+        error: (err) => err.message || 'TRANSACTION PROTOCOL FAILED'
+      })
     })
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-10 py-10">
-      {/* Stepper */}
-      <div className="flex items-center justify-center space-x-4">
+    <div className="max-w-6xl mx-auto space-y-16 py-12 px-6">
+      {/* Header - Architectural */}
+      <div className="border-b border-border pb-12">
+        <h2 className="text-[10px] uppercase tracking-[0.4em] font-black text-primary mb-6">Service Initiation</h2>
+        <h1 className="text-5xl font-black text-foreground tracking-tighter uppercase leading-tight">
+          NEW <span className="font-light italic text-primary">ORDER</span>.
+        </h1>
+      </div>
+
+      {/* Stepper - Minimalist */}
+      <div className="flex items-center justify-start space-x-12 border-b border-border pb-12 overflow-x-auto no-scrollbar">
         {[1, 2, 3].map((s) => (
-          <div key={s} className="flex items-center">
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-sm transition-all duration-500 shadow-sm ${
-              step === s ? 'bg-primary text-white scale-110 shadow-primary/20' : 
-              step > s ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'
-            }`}>
-              {step > s ? <Check size={20} /> : s}
+          <button 
+            key={s} 
+            disabled={step < s}
+            onClick={() => setStep(s)}
+            className={`flex items-center gap-4 transition-all duration-500 whitespace-nowrap ${
+              step === s ? 'opacity-100' : 'opacity-40 hover:opacity-100'
+            }`}
+          >
+            <div className={`text-2xl font-black tracking-tighter ${step === s ? 'text-primary' : 'text-foreground'}`}>
+              0{s}<span className="text-primary">.</span>
             </div>
-            {s < 3 && (
-              <div className={`w-20 h-1 mx-2 rounded-full transition-colors duration-500 ${
-                step > s ? 'bg-emerald-500' : 'bg-slate-100'
-              }`} />
-            )}
-          </div>
+            <div className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">
+              {s === 1 ? 'Item Selection' : s === 2 ? 'Service & Units' : 'Secure Payment'}
+            </div>
+          </button>
         ))}
       </div>
 
       {/* Step Content */}
-      <div className="bg-white rounded-[3rem] border border-border/50 shadow-sm p-10 lg:p-16">
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
         {step === 1 && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div>
-              <h2 className="text-3xl font-extrabold text-foreground tracking-tighter mb-2">Select Services</h2>
-              <p className="text-muted-foreground font-medium">Choose the professional care your garments deserve.</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-border border border-border">
               {services.map((service) => (
                 <button
                   key={service.id}
-                  onClick={() => toggleService(service.id)}
-                  className={`flex items-start text-left gap-4 p-6 rounded-3xl border-2 transition-all duration-300 group ${
-                    selectedServices.includes(service.id)
-                      ? 'border-primary bg-primary/5 shadow-lg shadow-primary/5'
-                      : 'border-border/50 hover:border-primary/30 hover:bg-slate-50'
+                  onClick={() => toggleItem(service.id)}
+                  className={`flex flex-col text-left gap-6 p-10 bg-background transition-all duration-500 group ${
+                    selectedServices.includes(service.id) ? 'bg-secondary/50' : 'hover:bg-secondary/30'
                   }`}
                 >
-                  <div className={`mt-1 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-colors ${
-                    selectedServices.includes(service.id) ? 'bg-primary border-primary text-white' : 'border-slate-300'
+                  <div className={`w-6 h-6 border border-border flex items-center justify-center transition-all duration-300 ${
+                    selectedServices.includes(service.id) ? 'bg-primary border-primary text-white' : 'group-hover:border-primary'
                   }`}>
                     {selectedServices.includes(service.id) && <Check size={14} />}
                   </div>
-                  <div>
-                    <p className="font-bold text-foreground text-lg tracking-tight group-hover:text-primary transition-colors">{service.name}</p>
-                    <p className="text-xs text-muted-foreground font-medium mt-1 leading-relaxed">{service.description}</p>
-                    <p className="text-sm font-extrabold text-primary mt-4">${service.price.toFixed(2)}</p>
+                  <div className="flex-grow">
+                    <p className="font-black text-foreground text-xl tracking-tighter uppercase group-hover:text-primary transition-colors">{service.name}</p>
+                    <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-3 leading-relaxed opacity-70 italic">{service.description}</p>
                   </div>
                 </button>
               ))}
@@ -152,209 +211,228 @@ export default function NewOrderForm({ services, userId }: NewOrderFormProps) {
         )}
 
         {step === 2 && (
-          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div>
-              <h2 className="text-3xl font-extrabold text-foreground tracking-tighter mb-2">Quantities & Notes</h2>
-              <p className="text-muted-foreground font-medium">Specify details for each selected service.</p>
+          <div className="space-y-16">
+            <div className="space-y-8">
+              <h3 className="text-xs font-black text-foreground tracking-[0.3em] uppercase border-b border-border pb-6">Service Assignment</h3>
+              <div className="space-y-px bg-border">
+                {selectedServices.map(id => {
+                  const service = services.find(s => s.id === id)!
+                  const selection = itemSelections[id]
+                  return (
+                    <div key={id} className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between p-8 md:p-12 bg-background gap-12">
+                      <div className="lg:w-1/3">
+                        <p className="font-black text-2xl text-foreground uppercase tracking-tighter">{service.name}</p>
+                        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-2">Specify task for this item</p>
+                      </div>
+
+                      <div className="flex-grow grid grid-cols-2 gap-px bg-border border border-border">
+                        {[
+                          { type: 'DryClean', label: 'Complete Dry Cleaning', price: service.dryCleanPrice },
+                          { type: 'Ironing', label: 'Ironing Only', price: service.ironingPrice }
+                        ].map((opt) => (
+                          <button
+                            key={opt.type}
+                            onClick={() => updateSelection(id, { type: opt.type as any })}
+                            className={`p-6 flex flex-col items-center gap-3 transition-all duration-500 bg-background ${
+                              selection.type === opt.type ? 'bg-secondary/80 outline outline-2 outline-primary outline-offset-[-2px]' : 'hover:bg-secondary/30'
+                            }`}
+                          >
+                            <span className={`text-[9px] font-black uppercase tracking-[0.3em] ${selection.type === opt.type ? 'text-primary' : 'text-muted-foreground'}`}>{opt.label}</span>
+                            <span className="text-sm font-black text-foreground tracking-tighter font-mono">{formatPrice(opt.price)}</span>
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center justify-between lg:justify-end gap-10">
+                        <div className="flex items-center gap-6">
+                          <button 
+                            onClick={() => updateSelection(id, { quantity: Math.max(1, selection.quantity - 1) })}
+                            className="w-12 h-12 border border-border hover:border-primary hover:text-primary transition-all font-black text-xl"
+                          >
+                            -
+                          </button>
+                          <span className="w-8 text-center font-black text-foreground tracking-tighter text-2xl font-mono">{selection.quantity}</span>
+                          <button 
+                            onClick={() => updateSelection(id, { quantity: selection.quantity + 1 })}
+                            className="w-12 h-12 border border-border hover:border-primary hover:text-primary transition-all font-black text-xl"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
 
-            <div className="space-y-6">
-              {selectedServices.map(id => {
-                const service = services.find(s => s.id === id)!
-                return (
-                  <div key={id} className="flex items-center justify-between p-6 bg-slate-50 rounded-3xl border border-border/30">
-                    <div>
-                      <p className="font-bold text-foreground">{service.name}</p>
-                      <p className="text-xs text-muted-foreground font-medium">${service.price.toFixed(2)} per unit</p>
-                    </div>
-                    <div className="flex items-center gap-4 bg-white p-2 rounded-2xl shadow-sm border border-border/50">
-                      <button 
-                        onClick={() => updateQuantity(id, -1)}
-                        className="w-10 h-10 rounded-xl hover:bg-slate-50 flex items-center justify-center font-bold text-slate-400 hover:text-primary transition-colors"
-                      >
-                        -
-                      </button>
-                      <span className="w-8 text-center font-extrabold text-foreground">{quantities[id] || 1}</span>
-                      <button 
-                        onClick={() => updateQuantity(id, 1)}
-                        className="w-10 h-10 rounded-xl hover:bg-slate-50 flex items-center justify-center font-bold text-slate-400 hover:text-primary transition-colors"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-
-            <div className="space-y-4">
-              <label className="block text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">Special Instructions</label>
+            <div className="max-w-3xl space-y-8">
+              <h3 className="text-xs font-black text-foreground tracking-[0.3em] uppercase border-b border-border pb-6">Additional Notes</h3>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="E.g., Handle the silk shirt with extra care, use starch on business shirts..."
-                className="w-full px-6 py-4 bg-slate-50 border border-border/50 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/30 transition-all h-32 resize-none"
+                placeholder="E.G. REMOVE COFFEE STAIN FROM SHIRT, EXTRA CAREFULLY WITH THE SILK GOWN..."
+                className="w-full px-8 py-6 border border-border bg-background text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all h-40 resize-none placeholder:opacity-30"
               />
             </div>
           </div>
         )}
 
         {step === 3 && (
-          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div>
-              <h2 className="text-3xl font-extrabold text-foreground tracking-tighter mb-2">Final Review</h2>
-              <p className="text-muted-foreground font-medium">Review your service summary and schedule pickup.</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              <div className="space-y-6">
-                <div className="bg-slate-50 rounded-3xl p-8 border border-border/30">
-                  <h4 className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest mb-6">
-                    <Calculator size={14} /> Cost Breakdown
-                  </h4>
-                  <div className="space-y-4">
-                    {selectedServices.map(id => {
-                      const service = services.find(s => s.id === id)!
-                      const qty = quantities[id] || 1
-                      return (
-                        <div key={id} className="flex justify-between text-sm">
-                          <span className="font-medium text-muted-foreground">{qty}x {service.name}</span>
-                          <span className="font-bold text-foreground">${(service.price * qty).toFixed(2)}</span>
-                        </div>
-                      )
-                    })}
-                    <div className="flex justify-between text-sm py-2">
-                      <span className="font-medium text-muted-foreground">Subtotal</span>
-                      <span className="font-bold text-foreground">${subtotal.toFixed(2)}</span>
-                    </div>
-                    {paymentMode === 'Online' && (
-                      <div className="flex justify-between text-sm py-2 text-primary bg-primary/5 px-2 rounded-lg">
-                        <span className="font-medium italic">Service Fee (5%)</span>
-                        <span className="font-bold">${platformFee.toFixed(2)}</span>
-                      </div>
-                    )}
-                    <div className="pt-4 border-t border-border/50 flex justify-between">
-                      <span className="font-extrabold text-foreground">Estimate Total</span>
-                      <span className="font-extrabold text-primary text-xl tracking-tighter">${total.toFixed(2)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-primary/5 rounded-3xl p-6 border border-primary/10 flex items-start gap-3">
-                  <Info className="text-primary mt-0.5" size={18} />
-                  <p className="text-[10px] text-primary/80 font-bold leading-relaxed uppercase tracking-tight">
-                    Final price may adjust slightly upon inspection of garments at our facility.
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-8">
-                <div className="space-y-4">
-                  <label className="block text-xs font-bold text-muted-foreground uppercase tracking-widest px-1">Pickup Schedule</label>
-                  <div className="relative">
-                    <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+            <div className="space-y-12">
+              <h3 className="text-xs font-black text-foreground tracking-[0.3em] uppercase border-b border-border pb-6">Summary & Logistics</h3>
+              
+              <div className="space-y-10">
+                <div className="space-y-6">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Scheduled Pickup</p>
+                  <div className="relative group">
+                    <Calendar className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" size={16} />
                     <input
                       type="datetime-local"
                       value={scheduledPickup}
                       onChange={(e) => setScheduledPickup(e.target.value)}
-                      className="w-full pl-16 pr-6 py-4 bg-slate-50 border border-border/50 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/30 transition-all"
+                      className="w-full pl-16 pr-8 py-5 border border-border bg-background text-[10px] font-black uppercase tracking-[0.3em] focus:outline-none focus:border-primary transition-all"
                     />
                   </div>
                 </div>
 
-                <div className="bg-slate-50 rounded-3xl p-8 border border-border/30 space-y-6">
-                   <h4 className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">
-                    <CreditCard size={14} /> Payment Method
-                  </h4>
-                  
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMode('Cash')}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
-                        paymentMode === 'Cash' ? 'border-primary bg-primary/5 ring-4 ring-primary/5' : 'border-border/50 bg-white hover:border-primary/30'
-                      }`}
-                    >
-                      <Banknote className={paymentMode === 'Cash' ? 'text-primary' : 'text-slate-400'} size={20} />
-                      <span className={`text-[10px] font-bold uppercase tracking-wider ${paymentMode === 'Cash' ? 'text-primary' : 'text-slate-500'}`}>Cash on Delivery</span>
-                    </button>
-                    
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMode('Online')}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
-                        paymentMode === 'Online' ? 'border-primary bg-primary/5 ring-4 ring-primary/5' : 'border-border/50 bg-white hover:border-primary/30'
-                      }`}
-                    >
-                      <Wallet className={paymentMode === 'Online' ? 'text-primary' : 'text-slate-400'} size={20} />
-                      <span className={`text-[10px] font-bold uppercase tracking-wider ${paymentMode === 'Online' ? 'text-primary' : 'text-slate-500'}`}>Pay Online (Paystack)</span>
-                    </button>
+                <div className="space-y-6">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Delivery Priority</p>
+                  <button 
+                    onClick={() => setIsUrgent(!isUrgent)}
+                    className={`w-full p-8 border transition-all duration-500 flex items-center justify-between group ${
+                      isUrgent ? 'bg-primary/10 border-primary' : 'bg-background border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-6">
+                      <div className={`w-6 h-6 border flex items-center justify-center transition-all ${
+                        isUrgent ? 'bg-primary border-primary text-white' : 'border-border group-hover:border-primary'
+                      }`}>
+                        {isUrgent && <Check size={14} />}
+                      </div>
+                      <div className="text-left">
+                        <p className={`text-[11px] font-black uppercase tracking-[0.2em] ${isUrgent ? 'text-primary' : 'text-foreground'}`}>URGENT DELIVERY PROTOCOL</p>
+                        <p className="text-[9px] text-muted-foreground font-black uppercase tracking-[0.1em] mt-1">24-hour priority processing (15% surcharge)</p>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Payment Protocol</p>
+                  <div className="p-10 border border-primary/20 bg-primary/5 flex items-center gap-6">
+                    <CreditCard className="text-primary shrink-0" size={32} />
+                    <div>
+                      <p className="text-[11px] font-black text-primary uppercase tracking-[0.2em]">SECURE ONLINE PAYMENT</p>
+                      <p className="text-[9px] text-primary/70 font-black uppercase tracking-[0.1em] mt-1">Processed securely via Paystack</p>
+                    </div>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <div className="space-y-12">
+              <h3 className="text-xs font-black text-foreground tracking-[0.3em] uppercase border-b border-border pb-6">Order Quote</h3>
+              <div className="border border-border p-10 space-y-10 bg-background">
+                <div className="space-y-6">
+                  {selectedServices.map(id => {
+                    const service = services.find(s => s.id === id)!
+                    const selection = itemSelections[id]
+                    const price = selection.type === 'DryClean' ? service.dryCleanPrice : service.ironingPrice
+                    return (
+                      <div key={id} className="flex flex-col gap-2">
+                         <div className="flex justify-between items-baseline">
+                          <span className="text-[10px] font-black text-foreground uppercase tracking-widest">{selection.quantity}X {service.name}</span>
+                          <span className="font-black text-foreground tracking-tighter uppercase">{formatPrice(price * selection.quantity)}</span>
+                        </div>
+                        <span className="text-[8px] font-black text-primary uppercase tracking-widest">{selection.type === 'DryClean' ? 'Complete Dry Clean' : 'Ironing Only'}</span>
+                      </div>
+                    )
+                  })}
+                </div>
                 
-                <div className="bg-slate-50 rounded-3xl p-8 border border-border/30 space-y-4">
-                   <h4 className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">
-                    <MapPin size={14} /> Service Location
-                  </h4>
-                  <p className="text-sm font-bold text-foreground tracking-tight">Saved Address</p>
-                  <p className="text-xs text-muted-foreground font-medium leading-relaxed">
-                    123 Main St, Apartment 4B<br />
-                    New York, NY 10001
-                  </p>
+                <div className="pt-10 border-t border-border space-y-4">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Subtotal</span>
+                    <span className="font-black text-foreground tracking-tighter uppercase">{formatPrice(subtotal)}</span>
+                  </div>
+                  {activeDiscount && (
+                    <div className="flex justify-between items-baseline text-emerald-500">
+                      <span className="text-[10px] font-black uppercase tracking-widest">Bulk Discount ({activeDiscount.percentage}%)</span>
+                      <span className="font-black tracking-tighter uppercase">-{formatPrice(discountAmount)}</span>
+                    </div>
+                  )}
+                  {isUrgent && (
+                    <div className="flex justify-between items-baseline text-primary">
+                      <span className="text-[10px] font-black uppercase tracking-widest">Urgent Surcharge (15%)</span>
+                      <span className="font-black tracking-tighter uppercase">{formatPrice(urgentFee)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-baseline text-primary">
+                    <span className="text-[10px] font-black uppercase tracking-widest">Digital Service Fee (5%)</span>
+                    <span className="font-black tracking-tighter uppercase">{formatPrice(platformFee)}</span>
+                  </div>
+                  <div className="pt-10 flex justify-between items-baseline">
+                    <span className="text-xs font-black text-foreground uppercase tracking-[0.3em]">Total Settlement</span>
+                    <span className="text-4xl font-black text-primary tracking-tighter uppercase">{formatPrice(total)}</span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         )}
+      </div>
 
-        {/* Footer Navigation */}
-        <div className="mt-16 flex items-center justify-between gap-6">
-          {step > 1 ? (
-            <button
-              onClick={() => setStep(prev => prev - 1)}
-              className="px-10 py-4 rounded-2xl font-bold flex items-center gap-2 text-slate-500 hover:text-primary hover:bg-primary/5 transition-all"
-            >
-              <ChevronLeft size={20} />
-              Back
-            </button>
-          ) : (
-            <button
-              onClick={() => router.back()}
-              className="px-10 py-4 rounded-2xl font-bold flex items-center gap-2 text-slate-400 hover:text-slate-600 transition-all"
-            >
-              Cancel
-            </button>
-          )}
+      {/* Footer Navigation - Architectural */}
+      <div className="mt-20 pt-12 border-t border-border flex items-center justify-between gap-12">
+        {step > 1 ? (
+          <button
+            onClick={() => setStep(prev => prev - 1)}
+            className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground hover:text-foreground transition-all flex items-center gap-4 group"
+          >
+            <ChevronLeft size={16} className="group-hover:-translate-x-2 transition-transform" />
+            Go Back
+          </button>
+        ) : (
+          <button
+            onClick={() => router.back()}
+            className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground hover:text-red-600 transition-all"
+          >
+            Cancel Order
+          </button>
+        )}
 
-          {step < 3 ? (
-            <button
-              onClick={() => {
-                if (step === 1 && selectedServices.length === 0) {
-                  toast.error("Please select at least one service")
-                  return
-                }
-                setStep(prev => prev + 1)
-              }}
-              className="bg-primary text-white px-12 py-4 rounded-2xl font-bold flex items-center gap-2 shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-all hover:-translate-y-1 active:scale-95"
-            >
-              Next Step
-              <ChevronRight size={20} />
-            </button>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              disabled={isPending}
-              className="bg-emerald-500 text-white px-16 py-5 rounded-2xl font-bold flex items-center gap-2 shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:translate-y-0"
-            >
-              {isPending ? <Loader2 className="animate-spin" size={24} /> : (
-                <>
-                  <Package size={24} />
-                  Confirm & Place Order
-                </>
-              )}
-            </button>
-          )}
-        </div>
+        <div className="flex-grow h-px bg-border/50"></div>
+
+        {step < 3 ? (
+          <button
+            onClick={() => {
+              if (step === 1 && selectedServices.length === 0) {
+                toast.error("Please select items to be handled")
+                return
+              }
+              setStep(prev => prev + 1)
+            }}
+            className="bg-foreground text-background px-16 py-6 font-black uppercase tracking-[0.4em] text-xs hover:bg-primary hover:text-white transition-all duration-500 flex items-center gap-4 group"
+          >
+            Next Step
+            <ChevronRight size={16} className="group-hover:translate-x-2 transition-transform" />
+          </button>
+        ) : (
+          <button
+            onClick={handleSubmit}
+            disabled={isPending}
+            className="bg-primary text-white px-20 py-6 font-black uppercase tracking-[0.4em] text-xs hover:bg-foreground transition-all duration-500 flex items-center gap-6 disabled:opacity-50"
+          >
+            {isPending ? <Loader2 className="animate-spin" size={20} /> : (
+              <>
+                <CreditCard size={20} />
+                Confirm & Pay
+              </>
+            )}
+          </button>
+        )}
       </div>
     </div>
   )

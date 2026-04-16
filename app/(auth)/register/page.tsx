@@ -3,31 +3,37 @@
 import { PublicLayout } from '@/components/layouts/PublicLayout'
 import Link from 'next/link'
 import { useState, useTransition } from 'react'
-import { Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { register } from '@/lib/auth-actions'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { RegisterSchema } from '@/schemas'
+import * as z from 'zod'
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    const name = formData.get("name") as string
-    const email = formData.get("email") as string
-    const password = formData.get("password") as string
-    const confirmPassword = formData.get("confirmPassword") as string
+  const {
+    register: registerField,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<z.infer<typeof RegisterSchema>>({
+    resolver: zodResolver(RegisterSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
+  })
 
-    if (password !== confirmPassword) {
-      toast.error("Passwords do not match")
-      return
-    }
-
+  const onSubmit = (values: z.infer<typeof RegisterSchema>) => {
     startTransition(async () => {
-      const result = await register({ name, email, password })
+      const result = await register(values)
       if (result?.error) {
         toast.error(result.error)
       } else {
@@ -39,117 +45,117 @@ export default function RegisterPage() {
 
   return (
     <PublicLayout>
-      <section className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-slate-50/50 py-20">
-        <div className="w-full max-w-xl bg-white rounded-[3rem] shadow-2xl shadow-primary/5 border border-border/50 p-12 lg:p-16">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-primary/5 text-primary mb-6">
-              <CheckCircle2 size={32} />
-            </div>
-            <h1 className="text-4xl font-extrabold text-foreground tracking-tighter mb-3">Join the Future</h1>
-            <p className="text-muted-foreground font-medium">Experience world-class garment care</p>
-          </div>
+      <section className="min-h-screen flex items-center justify-center px-6 lg:px-12 bg-background relative overflow-hidden py-32">
+        <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none">
+          <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
+        </div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Full Name */}
-              <div className="space-y-3">
-                <label htmlFor="name" className="block text-xs font-bold text-muted-foreground uppercase tracking-widest">
+        <div className="w-full max-w-2xl bg-background border border-foreground p-12 lg:p-20 relative z-10 animate-in fade-in zoom-in duration-700">
+          <header className="mb-16">
+            <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-6">Create Account</h2>
+            <h1 className="text-5xl font-black text-foreground tracking-tighter uppercase leading-none">
+              JOIN THE <br /><span className="font-light italic text-primary">COMMUNITY</span>.
+            </h1>
+          </header>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              <div className="space-y-4 group">
+                <label htmlFor="name" className="block text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] group-focus-within:text-primary transition-colors">
                   Full Name
                 </label>
                 <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  placeholder="John Smith"
-                  className="w-full px-6 py-4 bg-slate-50 border border-border/50 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/30 transition-all shadow-sm"
+                  {...registerField('name')}
+                  placeholder="FULL NAME"
+                  className={`w-full bg-transparent border-b py-4 text-sm font-black text-foreground placeholder:text-muted-foreground/30 focus:outline-none transition-all uppercase tracking-widest ${
+                    errors.name ? 'border-red-500' : 'border-border focus:border-foreground'
+                  }`}
                 />
+                {errors.name && <p className="text-[9px] font-black text-red-500 uppercase tracking-widest">{errors.name.message}</p>}
               </div>
 
-              {/* Email */}
-              <div className="space-y-3">
-                <label htmlFor="email" className="block text-xs font-bold text-muted-foreground uppercase tracking-widest">
+              <div className="space-y-4 group">
+                <label htmlFor="email" className="block text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] group-focus-within:text-primary transition-colors">
                   Email Address
                 </label>
                 <input
-                  id="email"
-                  name="email"
+                  {...registerField('email')}
                   type="email"
-                  required
-                  placeholder="you@example.com"
-                  className="w-full px-6 py-4 bg-slate-50 border border-border/50 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/30 transition-all shadow-sm"
+                  placeholder="EMAIL ADDRESS"
+                  className={`w-full bg-transparent border-b py-4 text-sm font-black text-foreground placeholder:text-muted-foreground/30 focus:outline-none transition-all uppercase tracking-widest ${
+                    errors.email ? 'border-red-500' : 'border-border focus:border-foreground'
+                  }`}
                 />
+                {errors.email && <p className="text-[9px] font-black text-red-500 uppercase tracking-widest">{errors.email.message}</p>}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Password */}
-              <div className="space-y-3">
-                <label htmlFor="password" className="block text-xs font-bold text-muted-foreground uppercase tracking-widest">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              <div className="space-y-4 group">
+                <label htmlFor="password" className="block text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] group-focus-within:text-primary transition-colors">
                   Password
                 </label>
                 <div className="relative">
                   <input
-                    id="password"
-                    name="password"
+                    {...registerField('password')}
                     type={showPassword ? 'text' : 'password'}
-                    required
-                    placeholder="••••••••"
-                    className="w-full px-6 py-4 bg-slate-50 border border-border/50 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/30 transition-all shadow-sm"
+                    placeholder="••••••••••••"
+                    className={`w-full bg-transparent border-b py-4 text-sm font-black text-foreground placeholder:text-muted-foreground/30 focus:outline-none transition-all uppercase tracking-widest ${
+                      errors.password ? 'border-red-500' : 'border-border focus:border-foreground'
+                    }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
                   >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
+                {errors.password && <p className="text-[9px] font-black text-red-500 uppercase tracking-widest">{errors.password.message}</p>}
               </div>
 
-              {/* Confirm Password */}
-              <div className="space-y-3">
-                <label htmlFor="confirmPassword" className="block text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                  Confirm
+              <div className="space-y-4 group">
+                <label htmlFor="confirmPassword" className="block text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] group-focus-within:text-primary transition-colors">
+                  Confirm Password
                 </label>
                 <input
-                  id="confirmPassword"
-                  name="confirmPassword"
+                  {...registerField('confirmPassword')}
                   type="password"
-                  required
-                  placeholder="••••••••"
-                  className="w-full px-6 py-4 bg-slate-50 border border-border/50 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/30 transition-all shadow-sm"
+                  placeholder="CONFIRM PASSWORD"
+                  className={`w-full bg-transparent border-b py-4 text-sm font-black text-foreground placeholder:text-muted-foreground/30 focus:outline-none transition-all uppercase tracking-widest ${
+                    errors.confirmPassword ? 'border-red-500' : 'border-border focus:border-foreground'
+                  }`}
                 />
+                {errors.confirmPassword && <p className="text-[9px] font-black text-red-500 uppercase tracking-widest">{errors.confirmPassword.message}</p>}
               </div>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isPending}
-              className="w-full bg-primary text-white py-5 rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/30 transition-all duration-300 font-bold hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:translate-y-0 flex items-center justify-center gap-2 group text-lg"
+              className="w-full bg-foreground text-background py-6 font-black uppercase tracking-[0.4em] text-[10px] hover:bg-primary hover:text-white transition-all duration-500 disabled:opacity-50 flex items-center justify-center gap-4 group"
             >
               {isPending ? (
-                <Loader2 className="animate-spin" size={24} />
+                <Loader2 className="animate-spin" size={16} />
               ) : (
                 <>
-                  Create Your Account
-                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  Create Account
+                  <span className="group-hover:translate-x-2 transition-transform duration-500">→</span>
                 </>
               )}
             </button>
           </form>
 
-          {/* Alternative */}
-          <div className="mt-12 pt-10 border-t border-border/30 text-center">
-            <p className="text-muted-foreground text-sm font-medium mb-4">Already have an account?</p>
+          <footer className="mt-20 pt-12 border-t border-border flex flex-col items-center gap-6">
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] font-medium">Already have an account?</p>
             <Link 
               href="/login" 
-              className="inline-flex items-center justify-center px-10 py-3.5 bg-slate-100 text-slate-600 rounded-2xl font-bold text-sm hover:bg-primary hover:text-white transition-all duration-300 shadow-sm"
+              className="text-[10px] font-black text-foreground uppercase tracking-[0.4em] border border-foreground px-12 py-5 hover:bg-foreground hover:text-background transition-all duration-500"
             >
-              Sign In Instead
+              Log In
             </Link>
-          </div>
+          </footer>
         </div>
       </section>
     </PublicLayout>

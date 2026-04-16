@@ -14,60 +14,61 @@ export default async function ServicesPage() {
   return (
     <PublicLayout>
       {/* Hero Section */}
-      <section className="pt-24 pb-20 px-4 sm:px-6 lg:px-8 bg-slate-950 text-white overflow-hidden relative">
-        <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary rounded-full blur-[120px]"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-400 rounded-full blur-[120px]"></div>
+      <section className="pt-32 pb-24 px-6 lg:px-12 bg-foreground text-background overflow-hidden relative">
+        <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
+          <div className="absolute top-0 right-0 w-[40vw] h-[40vw] border border-background rounded-full translate-x-1/2 -translate-y-1/2"></div>
         </div>
         
-        <div className="max-w-6xl mx-auto relative z-10">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full border border-white/20 text-sm font-medium mb-8 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="max-w-4xl">
+            <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-background/5 border border-background/10 text-[10px] uppercase tracking-[0.3em] font-black mb-10">
               <Sparkles className="w-4 h-4 text-primary" />
-              <span>Premium Care for Every Fabric</span>
+              <span>Fabric Preservation</span>
             </div>
-            <h1 className="text-5xl sm:text-7xl font-bold mb-8 leading-[1.1] tracking-tight">
-              Exceptional Results, <span className="text-primary italic">Every Time.</span>
+            <h1 className="text-6xl sm:text-8xl font-black mb-10 leading-[0.9] tracking-tighter uppercase">
+              EXCEPTIONAL <br /><span className="font-light italic">RESTORATION.</span>
             </h1>
-            <p className="text-xl text-slate-400 leading-relaxed max-w-2xl">
-              We've refined our processes across every category to ensure your garments 
-              return to you in their best possible condition.
+            <p className="text-xl opacity-70 leading-relaxed max-w-2xl font-medium">
+              Every category of care is executed with architectural precision, 
+              ensuring your garments return in their pristine state.
             </p>
           </div>
         </div>
       </section>
 
       {/* Services Grid */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-16">
+      <section className="py-32 px-6 lg:px-12 bg-background">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-24">
             {services.map((service) => (
-              <div key={service.id} className="group flex flex-col gap-8 p-8 rounded-[2.5rem] bg-slate-50 hover:bg-blue-50 transition-all duration-500 border border-transparent hover:border-blue-100">
-                <div className="flex items-start justify-between">
-                  <div className="w-20 h-20 rounded-3xl bg-white shadow-xl shadow-slate-200 flex items-center justify-center text-3xl font-black text-primary group-hover:scale-110 transition-transform duration-500">
+              <div key={service.id} className="group flex flex-col gap-10 p-0 transition-all duration-700">
+                <div className="flex items-start justify-between border-b border-border pb-8">
+                  <div className="text-5xl font-black tracking-tighter text-foreground group-hover:text-primary transition-colors duration-500">
                     {service.name[0]}
                   </div>
                   <div className="text-right">
-                    <div className="text-slate-400 text-sm font-bold uppercase tracking-widest mb-1">{service.category}</div>
-                    <div className="text-2xl font-bold text-slate-900">{formatPrice(service.price)} <span className="text-sm font-medium text-slate-400">/{service.unit}</span></div>
+                    <div className="text-[10px] uppercase tracking-[0.3em] font-black text-primary mb-2">{service.category}</div>
+                    <div className="text-3xl font-black tracking-tighter text-foreground">
+                      {formatPrice(service.price)} <span className="text-xs uppercase tracking-widest font-bold opacity-40">/ {service.unit}</span>
+                    </div>
                   </div>
                 </div>
                 
-                <div>
-                  <h3 className="text-3xl font-bold text-slate-900 mb-4 group-hover:text-blue-700 transition-colors">{service.name}</h3>
-                  <p className="text-slate-600 text-lg leading-relaxed mb-8">
+                <div className="space-y-8">
+                  <h3 className="text-4xl font-black tracking-tighter text-foreground group-hover:tracking-tight transition-all duration-700 uppercase">{service.name}</h3>
+                  <p className="text-muted-foreground text-lg leading-relaxed font-medium">
                     {service.description}
                   </p>
                   
-                  <div className="grid grid-cols-2 gap-4 mb-10 text-sm font-medium text-slate-500">
-                    <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary" /> Premium Detergents</div>
-                    <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-primary" /> 24-48h Delivery</div>
-                    <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-primary" /> Fabric Protection</div>
-                    <div className="flex items-center gap-2"><Sparkles className="w-4 h-4 text-primary" /> Expert Finishing</div>
+                  <div className="grid grid-cols-2 gap-6 text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground">
+                    <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-primary rounded-full"></div> Premium Care</div>
+                    <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-primary rounded-full"></div> 24H Delivery</div>
+                    <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-primary rounded-full"></div> Protection</div>
+                    <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 bg-primary rounded-full"></div> Finishing</div>
                   </div>
 
-                  <Link href="/register" className="inline-flex items-center justify-center px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-primary transition-all translate-y-0 hover:-translate-y-1">
-                    Book This Service
+                  <Link href="/register" className="inline-flex px-10 py-5 bg-foreground text-background font-black text-[10px] uppercase tracking-[0.4em] hover:bg-primary hover:text-white transition-all duration-500">
+                    Book Session
                   </Link>
                 </div>
               </div>
@@ -77,24 +78,18 @@ export default async function ServicesPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-blue-600 relative overflow-hidden">
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <h2 className="text-4xl sm:text-6xl font-bold text-white mb-8 tracking-tight">Trust Your Wardrobe to the Experts</h2>
-          <p className="text-xl text-blue-100 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Experience the difference that professional care makes. Join Dr. Clean today and reclaim your time.
+      <section className="py-48 px-6 lg:px-12 bg-background border-t border-border relative overflow-hidden text-center">
+        <div className="max-w-4xl mx-auto relative z-10">
+          <h2 className="text-5xl sm:text-7xl font-black text-foreground mb-10 tracking-tighter uppercase leading-[0.9]">DEDICATED TO <br /><span className="font-light italic text-primary">YOUR WARDROBE.</span></h2>
+          <p className="text-xl text-muted-foreground mb-16 max-w-2xl mx-auto font-medium">
+            Join the collective of individuals who have elevated their expectations.
           </p>
-          <div className="flex flex-wrap justify-center gap-6">
+          <div className="flex flex-wrap justify-center gap-8">
             <Link
               href="/register"
-              className="bg-white text-blue-600 px-12 py-5 rounded-2xl text-xl font-bold hover:shadow-2xl transition-all hover:scale-105"
+              className="bg-foreground text-background px-16 py-6 font-black uppercase tracking-[0.4em] text-xs hover:bg-primary hover:text-white transition-all duration-500"
             >
-              Get Started Now
-            </Link>
-            <Link
-              href="/pricing"
-              className="bg-blue-700 text-white border border-blue-500/50 px-12 py-5 rounded-2xl text-xl font-bold hover:bg-blue-800 transition-all"
-            >
-              View Full Price List
+              Get Started
             </Link>
           </div>
         </div>

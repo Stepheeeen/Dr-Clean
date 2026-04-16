@@ -18,118 +18,110 @@ export default async function CustomerDashboard() {
 
   return (
     <CustomerLayout>
-      <div className="space-y-10">
-        {/* Welcome Banner */}
-        <div className="relative bg-white rounded-[2.5rem] border border-border/50 p-10 overflow-hidden group shadow-sm">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-20 -mt-20 group-hover:scale-125 transition-transform duration-700"></div>
-          <div className="relative z-10">
-            <h2 className="text-4xl font-extrabold text-foreground tracking-tight mb-2">Hello, {session.user.name?.split(' ')[0] || 'there'}!</h2>
-            <p className="text-muted-foreground text-lg max-w-lg mb-8 font-medium">Your world-class garment care is just a few clicks away. Everything looks fresh today.</p>
-            <Link 
-              href="/customer/orders/new" 
-              className="inline-flex items-center gap-2 bg-primary text-white shadow-xl shadow-primary/20 hover:shadow-primary/40 px-10 py-4 rounded-2xl font-bold transition-all duration-300 hover:-translate-y-1 active:scale-95"
-            >
-              <Plus size={20} />
-              Book New Service
-            </Link>
+      <div className="space-y-12">
+        {/* Welcome Section - Architectural Header */}
+        <section className="relative py-12 border-b border-border">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <div className="max-w-2xl">
+              <h2 className="text-[10px] uppercase tracking-[0.4em] font-black text-primary mb-6">Dashboard Overview</h2>
+              <h1 className="text-5xl sm:text-6xl font-black text-foreground tracking-tighter leading-[1.1] uppercase">
+                HELLO, <br /><span className="font-light italic text-primary">{session.user.name?.split(' ')[0] || 'MEMBER'}</span>.
+              </h1>
+              <p className="mt-8 text-lg text-muted-foreground font-medium leading-relaxed max-w-lg">
+                Your clothes are in safe hands. We're processing your orders with care and precision.
+              </p>
+            </div>
           </div>
-        </div>
+        </section>
 
-        {/* Quick Stats Dashboard */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Vital Metrics - Minimalist Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 border- border-border">
           {[
-            { label: 'Active Orders', value: activeOrders.length, icon: Clock, color: 'text-primary', bg: 'bg-primary/5' },
-            { label: 'Total Requests', value: allOrders.length, icon: Package, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-            { label: 'Total Spent', value: formatPrice(totalSpent), icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50' }
+            { label: 'Active Orders', value: activeOrders.length, icon: Clock },
+            { label: 'Total Orders', value: allOrders.length, icon: Package },
+            { label: 'Total Spent', value: formatPrice(totalSpent), icon: TrendingUp }
           ].map((stat, i) => (
-            <div key={i} className="bg-white rounded-[2rem] border border-border/50 p-8 shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 group">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest">{stat.label}</p>
-                <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform duration-300`}>
-                  <stat.icon size={20} />
-                </div>
+            <div key={i} className={`p-10 border-border group ${i !== 2 ? 'md:border-r' : ''} ${i !== 2 ? 'border-b md:border-b-0' : ''}`}>
+              <div className="flex items-center justify-between mb-6">
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground group-hover:text-primary transition-colors">{stat.label}</p>
+                <stat.icon size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />
               </div>
-              <p className="text-3xl font-extrabold text-foreground tracking-tighter">{stat.value}</p>
+              <p className="text-4xl font-black text-foreground tracking-tighter uppercase">{stat.value}</p>
             </div>
           ))}
         </div>
 
-        {/* Active & Recent Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Active Orders List */}
-          <div className="bg-white rounded-[2.5rem] border border-border/50 shadow-sm overflow-hidden h-fit">
-            <div className="p-8 border-b border-border/50 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-foreground tracking-tight">Active Status</h3>
-              <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+        {/* Active & Recent Activity - Architectural Division */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 pt-8">
+          {/* Active Status Column */}
+          <div className="space-y-12">
+            <div className="flex items-center justify-between border-b border-border pb-6">
+              <h3 className="text-xs font-black text-foreground tracking-[0.3em] uppercase">Active Orders</h3>
+              <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
             </div>
-            <div className="divide-y divide-border/20">
+            
+            <div className="space-y-4">
               {activeOrders.map((order) => (
-                <div key={order.id} className="p-8 hover:bg-muted/30 transition-all duration-300 group">
-                  <div className="flex items-start justify-between mb-4">
+                <div key={order.id} className="p-8 border border-border group hover:border-primary transition-all duration-500 bg-background">
+                  <div className="flex items-start justify-between mb-6">
                     <div>
-                      <p className="font-extrabold text-lg text-foreground tracking-tight">#{order.orderNumber}</p>
-                      <p className="text-xs text-muted-foreground font-medium mt-1">Scheduled: {order.scheduledPickup ? new Date(order.scheduledPickup).toLocaleString() : 'As soon as possible'}</p>
+                      <h4 className="font-black text-2xl text-foreground tracking-tighter">ORDER NO. {order.orderNumber}</h4>
+                      <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-2 bg-secondary px-3 py-1 inline-block">
+                        ORDERED: {new Date(order.createdAt).toLocaleDateString()}
+                      </p>
                     </div>
-                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-wide shadow-sm ${
-                      order.status === 'Pending' ? 'bg-amber-100 text-amber-800' :
-                      order.status === 'Pickup Scheduled' ? 'bg-blue-100 text-blue-800' :
-                      order.status === 'In Cleaning' ? 'bg-indigo-100 text-indigo-800' :
-                      'bg-emerald-100 text-emerald-800'
-                    }`}>
+                    <span className="text-[10px] font-black tracking-[0.2em] uppercase text-primary border border-primary/20 px-4 py-1">
                       {order.status}
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-2 mb-6">
+                  <div className="flex flex-wrap gap-2 mb-8">
                     {order.items.map((item, idx) => (
-                      <span key={idx} className="bg-slate-100 text-slate-600 px-3 py-1 rounded-lg text-[10px] font-bold">
-                        {item.quantity}x {item.name}
+                      <span key={idx} className="border border-border text-muted-foreground px-3 py-1 text-[10px] font-black uppercase tracking-widest">
+                        {item.quantity}X {item.name}
                       </span>
                     ))}
                   </div>
                   <Link
                     href={`/customer/orders/${order.id}`}
-                    className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-bold text-sm tracking-tight transition-colors"
+                    className="inline-flex items-center gap-4 text-foreground hover:text-primary font-black text-[10px] tracking-[0.3em] uppercase transition-all duration-300 group/link"
                   >
-                    Manage This Order
-                    <span className="group-hover:translate-x-1 transition-transform inline-block">→</span>
+                    View Details
+                    <Plus size={12} className="group-hover/link:rotate-90 transition-transform" />
                   </Link>
                 </div>
               ))}
               {activeOrders.length === 0 && (
-                <div className="p-12 text-center">
-                  <Package size={40} className="mx-auto text-muted-foreground opacity-20 mb-4" />
-                  <p className="text-muted-foreground text-sm font-medium">No active orders currently.</p>
+                <div className="py-20 text-center border border-dashed border-border">
+                  <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.4em]">No active sessions found.</p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Recent Orders Overview */}
-          <div className="bg-white rounded-[2.5rem] border border-border/50 shadow-sm overflow-hidden h-fit">
-            <div className="p-8 border-b border-border/50 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-foreground tracking-tight">Service History</h3>
-              <Link href="/customer/orders" className="text-primary hover:text-primary/80 font-bold text-sm">
-                Full History
+          {/* History Column */}
+          <div className="space-y-12">
+            <div className="flex items-center justify-between border-b border-border pb-6">
+              <h3 className="text-xs font-black text-foreground tracking-[0.3em] uppercase">Order History</h3>
+              <Link href="/customer/orders" className="text-[10px] font-black text-primary tracking-[0.3em] uppercase hover:text-foreground transition-colors">
+                View All
               </Link>
             </div>
-            <div className="divide-y divide-border/20">
-              {allOrders.slice(0, 3).map((order) => (
-                <div key={order.id} className="p-8 hover:bg-muted/30 transition-all duration-300">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="font-bold text-foreground tracking-tight">#{order.orderNumber}</p>
-                    <p className="text-sm font-extrabold text-foreground">{formatPrice(order.total)}</p>
+            
+            <div className="divide-y divide-border">
+              {allOrders.slice(0, 5).map((order) => (
+                <div key={order.id} className="py-8 group flex items-center justify-between hover:px-2 transition-all duration-500">
+                  <div className="space-y-1">
+                    <p className="font-black text-foreground tracking-tighter uppercase">ORDER NO. {order.orderNumber}</p>
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest italic">
+                      {order.items.length} Item{order.items.length !== 1 ? 's' : ''} — {new Date(order.createdAt).toLocaleDateString()}
+                    </p>
                   </div>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
-                    <span className="truncate max-w-[200px]">
-                      {order.items.map(item => item.name).join(', ')}
-                    </span>
-                    <span>{new Date(order.createdAt).toLocaleDateString()}</span>
-                  </div>
+                  <p className="text-lg font-black text-foreground tracking-tighter">{formatPrice(order.total)}</p>
                 </div>
               ))}
               {allOrders.length === 0 && (
-                <div className="p-12 text-center text-muted-foreground text-sm font-medium italic">
-                  Your story with Dr. Clean begins here.
+                <div className="py-20 text-center italic text-muted-foreground text-sm font-medium opacity-40">
+                  Welcome! Your orders will appear here once you make your first request.
                 </div>
               )}
             </div>

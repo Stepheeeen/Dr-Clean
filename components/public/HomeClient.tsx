@@ -22,100 +22,96 @@ export default function HomeClient() {
 
   return (
     <>
-      {/* Hero Section - High-End Minimalist */}
-      <section className="relative min-h-[90vh] flex items-center pt-20 overflow-hidden bg-white">
-        <div className="absolute inset-0 z-0">
+      {/* Hero Section - Architectural Minimalist */}
+      <section className="relative min-h-[95vh] flex items-center overflow-hidden bg-background">
+        <div className="absolute inset-0 z-0 overflow-hidden">
           <Image
             src="/images/laundry_hero.png"
-            alt="Modern Laundry Boutique"
+            alt="Modern Laundry Boutique Hero"
             fill
-            className="object-cover opacity-90 transition-transform duration-1000 hover:scale-105"
+            sizes="100vw"
+            className="object-cover opacity-[0.85] transition-transform duration-[2000ms] hover:scale-105"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent"></div>
         </div>
         
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <span className="relative flex h-2 w-2">
+        <div className="container mx-auto px-6 lg:px-12 relative z-10">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-primary/5 border border-primary/10 text-primary text-[10px] uppercase tracking-[0.3em] font-bold mb-10 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+              <span className="relative flex h-1.5 w-1.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary"></span>
               </span>
-              Premium Care for Your Garments
+              The Standard of Purity
             </div>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground mb-8 text-balance leading-[1.1] tracking-tight">
-              Laundry. <br />
-              <span className="text-primary italic">Perfectly</span> Done.
+            <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black text-foreground mb-10 tracking-tighter leading-[0.9] text-balance">
+              LAUNDRY<span className="text-primary italic">.</span> <br />
+              <span className="font-light">REDEFINED.</span>
             </h1>
-            <p className="text-xl text-muted-foreground mb-10 max-w-lg leading-relaxed">
-              Experience the pinnacle of garment care. Professional cleaning, meticulous pressing, and seamless delivery. 
+            <p className="text-xl text-muted-foreground mb-12 max-w-lg leading-relaxed font-medium">
+              We approach garment care with the same precision and obsession as fine architecture. Meticulous, timeless, and pure.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="flex flex-col sm:flex-row gap-6 items-start">
               <Link
                 href="/register"
-                className="bg-primary text-primary-foreground px-8 py-4 rounded-full hover:bg-primary/90 transition-all font-semibold text-lg flex items-center gap-2 shadow-lg shadow-primary/20"
+                className="group relative bg-foreground text-background px-10 py-5 overflow-hidden transition-all duration-500 hover:pr-14"
               >
-                Schedule Pickup <ArrowRight size={20} />
+                <span className="relative z-10 font-bold uppercase tracking-widest text-sm">Schedule Pickup</span>
+                <ArrowRight className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-4 group-hover:translate-x-0" size={20} />
               </Link>
               <Link
                 href="/services"
-                className="bg-white/80 backdrop-blur-sm border border-border text-foreground px-8 py-4 rounded-full hover:bg-secondary transition-colors font-semibold text-lg"
+                className="group px-10 py-5 border border-border hover:border-foreground transition-all duration-500 font-bold uppercase tracking-widest text-sm"
               >
-                Our Services
+                Our Portfolios
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats/Social Proof */}
-      <section className="py-12 border-y border-border bg-muted/30">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-foreground">10k+</div>
-              <div className="text-sm text-muted-foreground uppercase tracking-wider font-medium">Items Cleaned</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-foreground">24h</div>
-              <div className="text-sm text-muted-foreground uppercase tracking-wider font-medium">Fast Turnaround</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-foreground">4.9/5</div>
-              <div className="text-sm text-muted-foreground uppercase tracking-wider font-medium">Customer Rating</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-foreground">100%</div>
-              <div className="text-sm text-muted-foreground uppercase tracking-wider font-medium">Eco-Friendly</div>
-            </div>
+      {/* Stats - Refined Minimalist */}
+      <section className="py-20 border-y border-border bg-background">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-12">
+            {[
+              { label: 'Items Restored', value: '10k+' },
+              { label: 'Express Delivery', value: '24h' },
+              { label: 'Excellence Score', value: '4.9/5' },
+              { label: 'Sustainable', value: '100%' },
+            ].map((stat, idx) => (
+              <div key={idx} className="flex flex-col gap-2">
+                <div className="text-xs uppercase tracking-[0.4em] font-bold text-muted-foreground">{stat.label}</div>
+                <div className="text-4xl font-black tracking-tighter text-foreground">{stat.value}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works - Clean Grid */}
-      <section className="py-24 sm:py-32 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-20">
-            <h2 className="text-base font-semibold text-primary tracking-widest uppercase mb-4">Process</h2>
-            <h3 className="text-4xl font-bold text-foreground mb-6">Simple, Convenient, Professional</h3>
-            <p className="text-lg text-muted-foreground">
-              We've refined our process to make laundry the easiest part of your week.
-            </p>
+      {/* Process - Architectural Grid */}
+      <section className="py-32 bg-background">
+        <div className="container mx-auto px-6">
+          <div className="mb-24">
+            <h2 className="text-[10px] uppercase tracking-[0.4em] font-black text-primary mb-6">Workflow</h2>
+            <h3 className="text-5xl font-black text-foreground tracking-tighter max-w-xl leading-tight">
+              PRECISION IN EVERY PHASE.
+            </h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-12 gap-y-20">
             {[
-              { number: '01', title: 'Book Online', description: 'Schedule a pickup time that fits your life.' },
-              { number: '02', title: 'We Collect', description: 'Our professional courier gathers your laundry.' },
-              { number: '03', title: 'Expert Care', description: 'Specialized cleaning for each garment type.' },
-              { number: '04', title: 'Delivery', description: 'Fresh, perfectly folded, back at your door.' },
+              { number: '01', title: 'DIGITAL BOOKING', description: 'Schedule with architectural precision.' },
+              { number: '02', title: 'ELITE COLLECTION', description: 'White-glove handling at your doorstep.' },
+              { number: '03', title: 'EXPERT RESTORATION', description: 'Meticulous care for every thread.' },
+              { number: '04', title: 'FINAL DELIVERY', description: 'Pristine results, perfectly timed.' },
             ].map((step, idx) => (
-              <div key={idx} className="group relative">
-                <div className="text-5xl font-outline font-black text-transparent group-hover:text-primary transition-colors duration-500 mb-6 drop-shadow-sm" style={{ WebkitTextStroke: '1px var(--primary)' }}>
+              <div key={idx} className="group flex flex-col pt-8 border-t border-border hover:border-foreground transition-colors duration-700">
+                <div className="text-xs font-bold text-primary mb-8 tracking-widest">
                   {step.number}
                 </div>
-                <h4 className="text-xl font-bold text-foreground mb-3">{step.title}</h4>
-                <p className="text-muted-foreground leading-relaxed italic border-l-2 border-primary/20 pl-4">
+                <h4 className="text-xl font-black text-foreground mb-4 tracking-tighter">{step.title}</h4>
+                <p className="text-muted-foreground leading-relaxed font-medium">
                   {step.description}
                 </p>
               </div>
@@ -124,108 +120,108 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* Services Overview - Image Cards */}
-      <section className="py-24 sm:py-32 bg-secondary/50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
-            <div className="max-w-2xl text-left">
-              <h2 className="text-base font-semibold text-primary tracking-widest uppercase mb-4">Our Services</h2>
-              <h3 className="text-4xl font-bold text-foreground">Tailored Solutions for Your Wardrobe</h3>
+      {/* Services - Bento Layout */}
+      <section className="py-32 bg-secondary">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-10">
+            <div className="max-w-2xl">
+              <h2 className="text-[10px] uppercase tracking-[0.4em] font-black text-primary mb-6">Foundations</h2>
+              <h3 className="text-5xl font-black text-foreground tracking-tighter leading-tight">CURATED SERVICE MENU.</h3>
             </div>
             <Link
               href="/services"
-              className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-bold text-lg group"
+              className="text-[10px] uppercase tracking-[0.4em] font-black text-foreground border-b border-foreground pb-2 hover:text-primary hover:border-primary transition-all duration-500"
             >
-              View Full Menu <ChevronRight size={22} className="group-hover:translate-x-1 transition-transform" />
+              Explore All Portfolios
             </Link>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 border border-border">
-              <div className="relative h-64 overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            <div className="group bg-background border border-border p-1 hover:border-foreground transition-all duration-700">
+              <div className="relative h-[28rem] overflow-hidden">
                 <Image
                   src="/images/service_dry_clean.png"
-                  alt="Professional Dry Cleaning"
+                  alt="Professional Dry Cleaning Service"
                   fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-700"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-cover transition-transform duration-[1500ms] group-hover:scale-110"
                 />
-              </div>
-              <div className="p-8 text-center">
-                <h4 className="text-2xl font-bold mb-4">Dry Cleaning</h4>
-                <p className="text-muted-foreground mb-6">Meticulous care for your most delicate items, from silk to cashmere.</p>
-                <Link href="/services" className="text-primary font-semibold hover:underline">Learn More</Link>
-              </div>
-            </div>
-
-            <div className="group bg-primary text-primary-foreground rounded-3xl overflow-hidden shadow-xl hover:-translate-y-2 transition-all duration-500 scale-105 z-10">
-              <div className="p-12 text-center h-full flex flex-col justify-center">
-                <Shirt size={48} className="mx-auto mb-6 opacity-80" />
-                <h4 className="text-3xl font-bold mb-4">Premium Wash</h4>
-                <p className="text-primary-foreground/90 mb-8 text-lg">Our most popular choice. Expertly washed, dried, and perfectly folded.</p>
-                <Link href="/register" className="bg-white text-primary px-8 py-3 rounded-full font-bold hover:bg-secondary transition-colors inline-block w-fit mx-auto">
-                  Book Now
-                </Link>
+                <div className="absolute inset-0 bg-black/5 group-hover:bg-black/20 transition-all duration-700"></div>
+                <div className="absolute bottom-10 left-10 text-white z-10 transition-transform duration-700 group-hover:-translate-y-2">
+                  <h4 className="text-2xl font-black tracking-tighter mb-2">DRY CLEANING</h4>
+                  <p className="text-xs uppercase tracking-widest font-bold opacity-80">Heritage Preservation</p>
+                </div>
               </div>
             </div>
 
-            <div className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 border border-border">
-              <div className="relative h-64 overflow-hidden">
+            <div className="group bg-foreground text-background p-12 flex flex-col justify-between h-[28rem]">
+              <div>
+                <Shirt size={40} className="mb-10 opacity-50" />
+                <h4 className="text-3xl font-black tracking-tighter mb-6 leading-tight">PREMIUM <br />WASH & FOLD.</h4>
+                <p className="text-lg opacity-80 font-medium leading-relaxed italic">Our signature restoration process for your daily essentials.</p>
+              </div>
+              <Link href="/register" className="text-[10px] uppercase tracking-[0.3em] font-black bg-background text-foreground px-8 py-4 w-fit hover:bg-primary hover:text-white transition-all duration-500">
+                Book Session
+              </Link>
+            </div>
+
+            <div className="group bg-background border border-border p-1 hover:border-foreground transition-all duration-700">
+              <div className="relative h-[28rem] overflow-hidden">
                 <Image
                   src="/images/service_folded.png"
-                  alt="Express Laundry"
+                  alt="Express Laundry and Folding Service"
                   fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-700"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-cover transition-transform duration-[1500ms] group-hover:scale-110"
                 />
-              </div>
-              <div className="p-8 text-center">
-                <h4 className="text-2xl font-bold mb-4">Express Service</h4>
-                <p className="text-muted-foreground mb-6">Need it fast? Get your laundry back within 24 hours without compromise.</p>
-                <Link href="/services" className="text-primary font-semibold hover:underline">Learn More</Link>
+                <div className="absolute inset-0 bg-black/5 group-hover:bg-black/20 transition-all duration-700"></div>
+                <div className="absolute bottom-10 left-10 text-white z-10 transition-transform duration-700 group-hover:-translate-y-2">
+                  <h4 className="text-2xl font-black tracking-tighter mb-2">EXPRESS ART</h4>
+                  <p className="text-xs uppercase tracking-widest font-bold opacity-80">24H Turnaround</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Why Choose Us - Minimalist Benefits */}
-      <section className="py-24 sm:py-32 bg-white overflow-hidden">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+      {/* Why Choose Us - Editorial Benefits */}
+      <section className="py-32 bg-background overflow-hidden">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
             <div className="relative">
-              <div className="absolute -top-20 -left-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
-              <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl"></div>
-              <div className="relative space-y-4">
-                <div className="bg-muted p-8 rounded-[2rem] border border-border max-w-sm ml-auto animate-bounce-slow">
-                  <Star className="text-yellow-500 mb-4" fill="currentColor" />
-                  <p className="text-foreground font-medium italic">"The best laundry service I've ever used. Truly premium experience."</p>
-                  <p className="mt-4 text-sm text-muted-foreground font-bold">— Sarah J.</p>
-                </div>
-                <div className="bg-secondary p-8 rounded-[2rem] border border-border max-w-sm animate-pulse-slow">
-                  <CheckCircle2 className="text-primary mb-4" />
-                  <h5 className="font-bold mb-2">Quality Guaranteed</h5>
-                  <p className="text-sm text-muted-foreground">Every item is inspected twice before delivery.</p>
+              <div className="aspect-[4/5] bg-secondary border border-border p-1 overflow-hidden">
+                <div className="absolute inset-0 bg-primary opacity-5 mix-blend-multiply"></div>
+                <div className="relative h-full flex items-center justify-center p-12 text-center border border-border">
+                  <div className="space-y-12">
+                    <Star className="mx-auto text-primary" size={32} />
+                    <p className="text-3xl font-light italic leading-tight text-foreground">
+                      "WE APPROACH GARMENT CARE WITH THE SAME PRECISION AS FINE ARCHITECTURE."
+                    </p>
+                    <div className="text-[10px] uppercase tracking-[0.4em] font-black text-muted-foreground">The Dr. Clean Ethos</div>
+                  </div>
                 </div>
               </div>
             </div>
             
             <div className="relative">
-              <h2 className="text-base font-semibold text-primary tracking-widest uppercase mb-4">Excellence</h2>
-              <h3 className="text-4xl sm:text-5xl font-bold text-foreground mb-8 leading-tight">Superior Care for Every Thread</h3>
-              <div className="space-y-8">
+              <h2 className="text-[10px] uppercase tracking-[0.4em] font-black text-primary mb-6">Excellence</h2>
+              <h3 className="text-5xl font-black text-foreground tracking-tighter mb-12 leading-tight">SUPERIOR CARE <br />FOR EVERY THREAD.</h3>
+              <div className="space-y-12">
                 {[
-                  { icon: Shirt, title: 'Heritage Expertise', description: 'Over 10 years of professional tailoring and cleaning experience.' },
-                  { icon: Droplet, title: 'Eco-Friendly Solvents', description: 'We use premium, biodegradable detergents that are gentle on fabrics.' },
-                  { icon: Zap, title: 'Smart Tracking', description: 'Monitor your garment\'s journey in real-time through our portal.' },
+                  { icon: Shirt, title: 'HERITAGE EXPERTISE', description: 'Over 10 years of professional tailoring and cleaning experience.' },
+                  { icon: Droplet, title: 'PURE SOLUTIONS', description: 'We use premium, biodegradable detergents that are gentle on fabrics.' },
+                  { icon: Zap, title: 'SECURE PORTAL', description: 'Monitor your garment\'s journey in real-time through our secure portal.' },
                 ].map((feature, idx) => {
                   const Icon = feature.icon
                   return (
-                    <div key={idx} className="flex gap-6">
-                      <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-md">
-                        <Icon size={28} />
+                    <div key={idx} className="flex gap-8 group">
+                      <div className="flex-shrink-0 w-16 h-16 border border-border flex items-center justify-center group-hover:bg-foreground group-hover:text-background transition-all duration-500">
+                        <Icon size={24} />
                       </div>
-                      <div>
-                        <h4 className="text-xl font-bold text-foreground mb-2">{feature.title}</h4>
-                        <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
+                      <div className="flex flex-col justify-center">
+                        <h4 className="text-lg font-black tracking-tighter mb-2">{feature.title}</h4>
+                        <p className="text-muted-foreground font-medium leading-relaxed max-w-sm">{feature.description}</p>
                       </div>
                     </div>
                   )
@@ -236,83 +232,79 @@ export default function HomeClient() {
         </div>
       </section>
 
-      {/* Newsletter - Toast Demo */}
-      <section className="py-24 sm:py-32 bg-primary relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-1/3 h-full bg-white/5 skew-x-12 translate-x-1/2"></div>
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl sm:text-5xl font-bold text-primary-foreground mb-8 leading-tight">
-              Get 20% Off Your First Order
+      {/* Newsletter - Minimalist Elite */}
+      <section className="py-32 bg-foreground text-background relative overflow-hidden">
+        <div className="container mx-auto px-6 relative z-10 text-center">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-5xl sm:text-7xl font-black tracking-tighter mb-10 leading-tight">
+              JOIN THE CIRCLE.
             </h2>
-            <p className="text-xl text-primary-foreground/80 mb-12 max-w-2xl mx-auto">
-              Subscribe to our newsletter for exclusive offers, garment care tips, and service updates.
+            <p className="text-xl opacity-70 mb-16 max-w-2xl mx-auto font-medium">
+              Receive exclusive editorial updates, garment care wisdom, and preferred member invitations.
             </p>
-            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-0 max-w-lg mx-auto border border-background/20">
               <input
                 type="email"
-                placeholder="yours@email.com"
+                placeholder="EMAIL ADDRESS"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="flex-grow px-6 py-4 rounded-full bg-white text-foreground focus:outline-none focus:ring-4 focus:ring-white/20 text-lg shadow-inner"
+                className="flex-grow px-8 py-6 bg-transparent text-background focus:outline-none text-xs uppercase tracking-widest font-bold"
               />
               <button
                 type="submit"
-                className="bg-foreground text-background px-8 py-4 rounded-full font-bold hover:bg-foreground/90 transition-all shadow-lg active:scale-95"
+                className="bg-background text-foreground px-10 py-6 font-black text-xs uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all duration-500"
               >
-                Join Now
+                Subscribe
               </button>
             </form>
-            <p className="mt-6 text-primary-foreground/60 text-sm italic">
-              *Toast notifications integrated above
-            </p>
           </div>
+        </div>
+        <div className="absolute top-0 right-0 w-full h-full opacity-5 pointer-events-none">
+          <div className="absolute top-0 right-0 w-[40vw] h-[40vw] border border-background rounded-full translate-x-1/2 -translate-y-1/2"></div>
         </div>
       </section>
 
-      {/* Testimonials - Minimalist Cards */}
-      <section className="py-24 sm:py-32 bg-white">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20">
-            <h2 className="text-base font-semibold text-primary tracking-widest uppercase mb-4">Reviews</h2>
-            <h3 className="text-4xl font-bold text-foreground">Trusted by Thousands</h3>
+      {/* Testimonials - Minimalist Portrayal */}
+      <section className="py-32 bg-background">
+        <div className="container mx-auto px-6">
+          <div className="mb-20">
+            <h2 className="text-[10px] uppercase tracking-[0.4em] font-black text-primary mb-6">Testimonials</h2>
+            <h3 className="text-5xl font-black text-foreground tracking-tighter leading-tight">THE CLIENT VOICE.</h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {TESTIMONIALS.map((testimonial) => (
-              <div key={testimonial.id} className="bg-secondary/40 p-10 rounded-[2.5rem] border border-border flex flex-col justify-between">
+              <div key={testimonial.id} className="border-l border-border pl-10 py-4 flex flex-col justify-between hover:border-primary transition-colors duration-500">
                 <div>
-                  <div className="flex gap-1 mb-6">
+                  <div className="flex gap-1 mb-8 opacity-40">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} size={18} className="fill-yellow-400 text-yellow-400" />
+                      <Star key={i} size={14} className="fill-foreground text-foreground" />
                     ))}
                   </div>
-                  <p className="text-lg text-foreground italic leading-relaxed mb-6">&quot;{testimonial.content}&quot;</p>
+                  <p className="text-xl font-medium text-foreground italic leading-relaxed mb-10">&quot;{testimonial.content}&quot;</p>
                 </div>
-                <p className="font-black text-primary">— {testimonial.name}</p>
+                <div className="text-[10px] uppercase tracking-[0.4em] font-black text-primary">
+                  — {testimonial.name}
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-32 bg-white flex flex-col items-center justify-center text-center px-4 border-t border-border">
-        <div className="max-w-2xl animate-in fade-in zoom-in duration-1000">
-          <h2 className="text-5xl sm:text-6xl font-bold mb-8">Ready for Fresh?</h2>
-          <p className="text-xl text-muted-foreground mb-12 leading-relaxed">
-            Join the hundreds of satisfied customers who have simplified their lives with Dr. Clean.
+      {/* Final CTA - Minimalist Climax */}
+      <section className="py-48 bg-background flex flex-col items-center justify-center text-center px-6 border-t border-border">
+        <div className="max-w-4xl animate-in fade-in zoom-in duration-[1500ms]">
+          <h2 className="text-6xl sm:text-8xl font-black mb-12 tracking-tighter leading-[0.9]">READY FOR <br /><span className="font-light italic">PURE EXCELLENCE?</span></h2>
+          <p className="text-xl text-muted-foreground mb-16 max-w-2xl mx-auto font-medium">
+            Join the collective of individuals who have elevated their expectations of garment care.
           </p>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center">
+          <div className="flex flex-col sm:flex-row gap-8 justify-center">
             <Link
               href="/register"
-              className="bg-primary text-primary-foreground px-12 py-5 rounded-full hover:bg-primary/90 transition-all font-bold text-xl shadow-xl shadow-primary/30 active:scale-95"
+              className="bg-foreground text-background px-16 py-6 font-black uppercase tracking-[0.4em] text-sm hover:bg-primary hover:text-white transition-all duration-500"
             >
-              Get Started Today
+              Get Started
             </Link>
-          </div>
-          <div className="mt-12 flex items-center justify-center gap-8 grayscale opacity-50">
-            <div className="h-6 w-24 bg-foreground/20 rounded"></div>
-            <div className="h-6 w-24 bg-foreground/20 rounded"></div>
-            <div className="h-6 w-24 bg-foreground/20 rounded"></div>
           </div>
         </div>
       </section>

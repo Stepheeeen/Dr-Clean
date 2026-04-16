@@ -14,15 +14,22 @@ const RegisterSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 })
 
-export async function login(formData: FormData) {
-  const email = formData.get("email") as string
-  const password = formData.get("password") as string
+const LoginSchema = z.object({
+  email: z.string().email("Invalid email"),
+  password: z.string().min(1, "Password is required"),
+})
+
+export async function login(values: z.infer<typeof LoginSchema>) {
+  const validatedFields = LoginSchema.safeParse(values)
+  if (!validatedFields.success) return { error: "Invalid fields!" }
+
+  const { email, password } = validatedFields.data
 
   try {
     await signIn("credentials", {
       email,
       password,
-      redirectTo: "/", // Middleware will handle specific redirect
+      redirectTo: "/api/auth/login-redirect",
     })
   } catch (error) {
     if (error instanceof AuthError) {
@@ -60,7 +67,7 @@ export async function register(values: z.infer<typeof RegisterSchema>) {
       name,
       email,
       password: hashedPassword,
-    } as any,
+    },
   })
 
   return { success: "User created!" }

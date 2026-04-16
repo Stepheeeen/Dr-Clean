@@ -5,94 +5,77 @@ export function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-primary text-primary-foreground mt-16 sm:mt-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+    <footer className="bg-[#111111] text-white mt-32 border-t border-white/5">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-16 mb-20">
           {/* Brand */}
-          <div className="col-span-1">
-            <h3 className="text-2xl font-bold mb-2">Dr. Clean</h3>
-            <p className="text-primary-foreground/80 text-sm">
-              Premium laundry and dry cleaning services with pickup and delivery.
+          <div className="md:col-span-5">
+            <h3 className="text-3xl font-black tracking-tighter mb-8">
+              DR. CLEAN<span className="text-primary italic">.</span>
+            </h3>
+            <p className="text-muted-foreground text-lg leading-relaxed max-w-sm mb-10">
+              Redefining garment care through architectural precision and meticulous attention to detail. 
             </p>
+            <div className="flex gap-4">
+              <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-black transition-all cursor-pointer">
+                <Mail size={16} />
+              </div>
+              <div className="w-10 h-10 border border-white/10 rounded-full flex items-center justify-center hover:bg-white hover:text-black transition-all cursor-pointer">
+                <Phone size={16} />
+              </div>
+            </div>
           </div>
+          
+          <div className="md:col-span-1"></div>
 
-          {/* Quick Links */}
-          <div className="col-span-1">
-            <h4 className="font-semibold mb-4">Quick Links</h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="/services" className="hover:opacity-80 transition-opacity">
-                  Services
-                </Link>
-              </li>
-              <li>
-                <Link href="/pricing" className="hover:opacity-80 transition-opacity">
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link href="/about" className="hover:opacity-80 transition-opacity">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/faq" className="hover:opacity-80 transition-opacity">
-                  FAQ
-                </Link>
-              </li>
+          {/* Navigation */}
+          <div className="md:col-span-3">
+            <h4 className="text-[11px] uppercase tracking-[0.3em] font-bold text-primary mb-10">Directory</h4>
+            <ul className="space-y-6 text-sm">
+              {['Services', 'Pricing', 'About Us', 'FAQ'].map((item) => (
+                <li key={item}>
+                  <Link href={`/${item.toLowerCase().replace(' ', '-')}`} className="text-muted-foreground hover:text-white transition-colors tracking-wide">
+                    {item}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Contact Info */}
-          <div className="col-span-1">
-            <h4 className="font-semibold mb-4">Contact</h4>
-            <ul className="space-y-3 text-sm">
-              <li className="flex items-center gap-2">
-                <Phone size={16} />
-                <a href="tel:+2348000000000" className="hover:opacity-80 transition-opacity">
-                  +234 (800) 000-0000
-                </a>
+          {/* Contact */}
+          <div className="md:col-span-3">
+            <h4 className="text-[11px] uppercase tracking-[0.3em] font-bold text-primary mb-10">Presence</h4>
+            <ul className="space-y-6 text-sm">
+              <li className="flex flex-col gap-2">
+                <span className="text-white font-medium uppercase text-[10px] tracking-widest opacity-50">Headquarters</span>
+                <span className="text-muted-foreground">Lagos & Abuja, Nigeria</span>
               </li>
-              <li className="flex items-center gap-2">
-                <Mail size={16} />
-                <a href="mailto:hello@dr-clean.com.ng" className="hover:opacity-80 transition-opacity">
+              <li className="flex flex-col gap-2">
+                <span className="text-white font-medium uppercase text-[10px] tracking-widest opacity-50">Inquiries</span>
+                <a href="mailto:hello@dr-clean.com.ng" className="text-muted-foreground hover:text-white transition-colors">
                   hello@dr-clean.com.ng
                 </a>
               </li>
-              <li className="flex items-start gap-2">
-                <MapPin size={16} className="mt-1 flex-shrink-0" />
-                <span>Lagos & Abuja, Nigeria</span>
-              </li>
-            </ul>
-          </div>
-
-          {/* Hours */}
-          <div className="col-span-1">
-            <h4 className="font-semibold mb-4">Hours</h4>
-            <ul className="space-y-1 text-sm">
-              <li>Monday - Friday: 8:00 AM - 6:00 PM</li>
-              <li>Saturday: 9:00 AM - 5:00 PM</li>
-              <li>Sunday: Closed</li>
             </ul>
           </div>
         </div>
 
-        {/* Divider */}
-        <div className="border-t border-primary-foreground/20 pt-8 mt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-primary-foreground/80">
-          <p className="text-center md:text-left order-2 md:order-1">
-            &copy; {currentYear} Dr. Clean Laundry Services. All rights reserved.
-          </p>
-          <p className="text-center md:text-right order-1 md:order-2">
-            Built by{" "}
+        {/* Divider & Copyright */}
+        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground">
+            &copy; {currentYear} DR. CLEAN RESIDENCES. ALL RIGHTS RESERVED.
+          </div>
+          <div className="text-[10px] uppercase tracking-[0.4em] text-muted-foreground flex items-center gap-4">
+            DESIGN BY 
             <a 
               href="https://flairtechlabs.com" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="font-medium hover:text-white underline underline-offset-4 transition-colors"
+              className="text-white font-bold hover:text-primary transition-colors"
             >
-              Flair Technologies LTD
+              FLAIR TECHNOLOGIES
             </a>
-          </p>
+          </div>
         </div>
       </div>
     </footer>

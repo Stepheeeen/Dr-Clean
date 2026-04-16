@@ -1,100 +1,63 @@
-'use client'
-
 import { AdminLayout } from '@/components/layouts/AdminLayout'
-import { formatPrice } from '@/lib/utils'
+import { getOrderById } from '@/lib/actions'
 import Link from 'next/link'
-import { MOCK_ORDERS, ORDER_STATUSES } from '@/lib/mock-data'
 import { ChevronLeft } from 'lucide-react'
-import { useState } from 'react'
+import { OrderManagement } from '@/components/admin/OrderManagement'
+import { notFound } from 'next/navigation'
+import { DeleteOrderButton } from '@/components/DeleteOrderButton'
 
-export default function AdminOrderDetailPage({ params }: { params: { id: string } }) {
-  const order = MOCK_ORDERS.find(o => o.id === params.id) || MOCK_ORDERS[0]
-  const [currentStatus, setCurrentStatus] = useState(order.status)
-  const [notes, setNotes] = useState(order.notes)
+export default async function AdminOrderDetailPage({ params }: { params: { id: string } }) {
+  const order = await getOrderById(params.id)
+
+  if (!order) {
+    return notFound()
+  }
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Back Button */}
-        <Link
-          href="/admin/orders"
-          className="flex items-center gap-2 text-primary hover:text-primary/80 font-semibold"
-        >
-          <ChevronLeft size={20} />
-          Back to Orders
-        </Link>
+      <div className="space-y-16 max-w-5xl mx-auto">
+        {/* Navigation & Identifier */}
+        <div className="flex flex-col gap-12">
+          <Link
+            href="/admin/orders"
+            className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] text-muted-foreground hover:text-primary transition-all group w-fit"
+          >
+            <ChevronLeft size={16} className="group-hover:-translate-x-2 transition-transform" />
+            Back to Orders
+          </Link>
 
-        {/* Order Info */}
-        <div className="bg-white rounded-lg border border-border p-6">
-          <div className="flex items-center justify-between mb-4">
+          <header className="flex flex-col md:flex-row md:items-end justify-between border-b border-foreground pb-12 gap-8">
             <div>
-              <h2 className="text-2xl font-bold text-foreground">{order.id}</h2>
-              <p className="text-muted-foreground">Customer: {order.customerName}</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-primary mb-4 italic">Order Details</p>
+              <h1 className="text-3xl md:text-5xl font-black text-foreground tracking-tighter uppercase leading-none break-all">
+                #{order.orderNumber}
+              </h1>
+              <p className="mt-6 text-[11px] font-black text-muted-foreground uppercase tracking-[0.3em] flex flex-wrap items-center gap-4 italic">
+                <span>NAME: {order.user.name}</span>
+                <span className="hidden sm:block w-1 h-1 bg-border rounded-full" />
+                <span>PLACED: {new Date(order.createdAt).toLocaleDateString()}</span>
+              </p>
             </div>
-          </div>
-        </div>
-
-        {/* Status Management */}
-        <div className="bg-white rounded-lg border border-border p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Order Status</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-            {ORDER_STATUSES.slice(0, 9).map((status) => (
-              <button
-                key={status}
-                onClick={() => setCurrentStatus(status)}
-                className={`px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                  currentStatus === status
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-foreground hover:bg-muted'
-                }`}
-              >
-                {status}
-              </button>
-            ))}
-          </div>
-          <p className="text-sm text-muted-foreground mt-4">Current Status: <span className="font-semibold">{currentStatus}</span></p>
-        </div>
-
-        {/* Order Items */}
-        <div className="bg-white rounded-lg border border-border p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Services</h3>
-          <div className="space-y-3">
-            {order.items.map((item, idx) => (
-              <div key={idx} className="flex items-center justify-between pb-3 border-b border-border last:border-0">
-                <div>
-                  <p className="font-medium text-foreground">{item.service}</p>
-                  <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
-                </div>
-                <p className="font-semibold text-foreground">{formatPrice(item.price * item.quantity)}</p>
+            
+            <div className="flex flex-col items-end gap-2">
+               <p className="text-[8px] font-black uppercase tracking-[0.4em] text-muted-foreground opacity-50">Current Status</p>
+               <div className={`px-8 py-4 border border-foreground text-[10px] font-black uppercase tracking-[0.4em] w-fit ${
+                order.status === 'Completed' ? 'bg-emerald-500 text-white border-emerald-500' :
+                order.status === 'Ready' ? 'bg-blue-500 text-white border-blue-500' :
+                'bg-background text-foreground'
+              }`}>
+                {order.status}
               </div>
-            ))}
-            <div className="pt-3 flex items-center justify-between font-bold text-lg">
-              <span>Total</span>
-              <span>{formatPrice(order.total)}</span>
+              {order.status === 'Pending' && order.paymentStatus !== 'Paid' && (
+                <div className="mt-4">
+                  <DeleteOrderButton orderId={order.id} orderNumber={order.orderNumber} />
+                </div>
+              )}
             </div>
-          </div>
+          </header>
         </div>
 
-        {/* Notes */}
-        <div className="bg-white rounded-lg border border-border p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Admin Notes</h3>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary h-24"
-            placeholder="Add notes about this order..."
-          />
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-4">
-          <button className="flex-1 bg-primary text-primary-foreground py-2 rounded-lg hover:bg-primary/90 transition-colors font-semibold">
-            Save Changes
-          </button>
-          <button className="flex-1 border-2 border-primary text-primary py-2 rounded-lg hover:bg-primary/10 transition-colors font-semibold">
-            Print Label
-          </button>
-        </div>
+        <OrderManagement order={order} />
       </div>
     </AdminLayout>
   )

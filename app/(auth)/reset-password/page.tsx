@@ -1,24 +1,4 @@
-"use client"
-
-import { useState, useTransition, useEffect } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Loader2, Lock, Eye, EyeOff, CheckCircle2 } from "lucide-react"
-import { useSearchParams, useRouter } from "next/navigation"
-import { resetPassword } from "@/lib/auth-actions"
-import { toast } from "sonner"
-import Link from "next/link"
-
-const ResetPasswordSchema = z.object({
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string()
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-})
-
-import { Suspense } from "react"
+import { PublicLayout } from '@/components/layouts/PublicLayout'
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams()
@@ -70,117 +50,120 @@ function ResetPasswordForm() {
     })
   }
 
-  if (isSuccess) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
-        <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-sm border border-slate-100 text-center">
-          <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle2 className="w-8 h-8" />
-          </div>
-          <h2 className="text-2xl font-bold text-slate-900">Password reset!</h2>
-          <p className="mt-2 text-slate-500">
-            Your password has been successfully reset. Redirecting you to login...
-          </p>
-          <Link 
-            href="/login"
-            className="mt-6 inline-block text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors"
-          >
-            Click here if not redirected
-          </Link>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Set new password</h2>
-          <p className="mt-2 text-sm text-slate-500">
-            Must be at least 6 characters long.
-          </p>
+    <PublicLayout>
+      <section className="min-h-screen flex items-center justify-center px-6 lg:px-12 bg-background relative overflow-hidden py-32">
+        {/* Background Accent */}
+        <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none">
+          <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-4">
-            <div>
-              <label htmlFor="password" university-id="password-label" className="block text-sm font-medium text-slate-700 mb-1">
-                New Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 h-5 text-slate-400" />
-                </div>
-                <input
-                  {...register("password")}
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  disabled={isPending}
-                  className="block w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all sm:text-sm"
-                  placeholder="••••••••"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-500">{errors.password.message}</p>
-              )}
-            </div>
+        <div className="w-full max-w-lg bg-background border border-foreground p-12 lg:p-20 relative z-10 animate-in fade-in zoom-in duration-700">
+          <header className="mb-16">
+            <h2 className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-6">Credential Restoration</h2>
+            <h1 className="text-5xl font-black text-foreground tracking-tighter uppercase leading-none">
+              SECURE <br /><span className="font-light italic text-primary">RECOVERY</span>.
+            </h1>
+            <p className="mt-8 text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em] italic leading-relaxed">
+              Define your new security markers.
+            </p>
+          </header>
 
-            <div>
-              <label htmlFor="confirmPassword" university-id="confirm-password-label" className="block text-sm font-medium text-slate-700 mb-1">
-                Confirm New Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 h-5 text-slate-400" />
+          {isSuccess ? (
+            <div className="text-center py-20 bg-secondary/20 border border-border">
+              <div className="w-20 h-20 border border-emerald-500 flex items-center justify-center mx-auto mb-10">
+                <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+              </div>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground mb-4">Protocol Completed</h3>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-12 italic">
+                Your credentials have been updated. Redirecting to Vault...
+              </p>
+              <Link 
+                href="/login"
+                className="text-[10px] font-black text-primary border-b border-primary pb-1 uppercase tracking-[0.3em] hover:text-foreground hover:border-foreground transition-all"
+              >
+                Manual Redirection
+              </Link>
+            </div>
+          ) : (
+            <form className="space-y-12" onSubmit={handleSubmit(onSubmit)}>
+              <div className="space-y-4 group">
+                <label htmlFor="password" className="block text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] group-focus-within:text-primary transition-colors">
+                  New Security Key
+                </label>
+                <div className="relative">
+                  <input
+                    {...register("password")}
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    disabled={isPending}
+                    placeholder="MINIMUM 6 CHARACTERS"
+                    className="w-full bg-transparent border-b border-border py-4 text-sm font-black text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-foreground transition-all uppercase tracking-widest"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
+                {errors.password && (
+                  <p className="text-[10px] font-black text-red-500 uppercase tracking-widest italic">{errors.password.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-4 group">
+                <label htmlFor="confirmPassword" className="block text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] group-focus-within:text-primary transition-colors">
+                  Verify Key
+                </label>
                 <input
                   {...register("confirmPassword")}
                   id="confirmPassword"
                   type={showPassword ? "text" : "password"}
                   disabled={isPending}
-                  className="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all sm:text-sm"
-                  placeholder="••••••••"
+                  placeholder="REPEAT SECURITY KEY"
+                  className="w-full bg-transparent border-b border-border py-4 text-sm font-black text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-foreground transition-all uppercase tracking-widest"
                 />
+                {errors.confirmPassword && (
+                  <p className="text-[10px] font-black text-red-500 uppercase tracking-widest italic">{errors.confirmPassword.message}</p>
+                )}
               </div>
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-500">{errors.confirmPassword.message}</p>
-              )}
-            </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={isPending}
-            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/20"
-          >
-            {isPending ? (
-              <Loader2 className="w-5 h-5 animate-spin text-white" />
-            ) : (
-              "Reset Password"
-            )}
-          </button>
-        </form>
-      </div>
-    </div>
+              <button
+                type="submit"
+                disabled={isPending}
+                className="w-full bg-foreground text-background py-6 font-black uppercase tracking-[0.4em] text-[10px] hover:bg-primary hover:text-white transition-all duration-500 disabled:opacity-50 flex items-center justify-center gap-4 group"
+              >
+                {isPending ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <>
+                    Restore Access
+                    <span className="group-hover:translate-x-2 transition-transform duration-500">→</span>
+                  </>
+                )}
+              </button>
+            </form>
+          )}
+        </div>
+      </section>
+    </PublicLayout>
   )
 }
 
 export default function ResetPasswordPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
       </div>
     }>
       <ResetPasswordForm />
+    </Suspense>
+  )
+}
+rdForm />
     </Suspense>
   )
 }

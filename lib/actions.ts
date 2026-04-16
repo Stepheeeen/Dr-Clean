@@ -1,9 +1,11 @@
-'use server'
+'use server' // Refreshed
 
 import prisma from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 import { Service } from '@/types'
 import { initializePaystackTransaction, verifyPaystackTransaction } from '@/lib/paystack'
+import { isAdmin, currentUser } from '@/lib/auth-utils'
+import { sendOrderStatusEmail } from '@/lib/mail'
 
 // --- Service Actions ---
 
@@ -57,17 +59,56 @@ export async function createOrder(data: {
   userId: string
   notes?: string
   scheduledPickup?: Date
-  paymentMode?: string
-  items: { name: string; price: number; quantity: number }[]
+  isUrgent?: boolean
+  items: { name: string; price: number; quantity: number; serviceType: string }[]
 }) {
   try {
-    const subtotal = data.items.reduce((acc, item) => acc + item.price * item.quantity, 0)
-    const platformFee = data.paymentMode === 'Online' ? subtotal * 0.05 : 0
-    const total = subtotal + platformFee
+    // 1. Fetch real prices from DB to prevent tampering
+    const serviceNames = data.items.map(i => i.name)
+    const dbServices = await prisma.service.findMany({
+      where: { name: { in: serviceNames } }
+    })
+
+    const validatedItems = data.items.map(item => {
+      const dbService = dbServices.find(s => s.name === item.name)
+      if (!dbService) return item
+      
+      const price = item.serviceType === 'DryClean' 
+        ? dbService.dryCleanPrice 
+        : dbService.ironingPrice
+
+      return {
+        ...item,
+        name: `${item.name} (${item.serviceType === 'DryClean' ? 'Complete Dry Clean' : 'Ironing Only'})`,
+        price: price
+      }
+    })
+
+    const subtotal = validatedItems.reduce((acc, item) => acc + item.price * item.quantity, 0)
+    const paymentMode = 'Online' // Online only as per new requirements
+
+    // 2. Apply Bulk Discounts from DB
+    const applicableDiscount = await prisma.bulkDiscount.findFirst({
+      where: { 
+        isActive: true,
+        threshold: { lte: subtotal }
+      },
+      orderBy: { threshold: 'desc' }
+    })
+
+    const discountAmount = applicableDiscount ? (subtotal * (applicableDiscount.percentage / 100)) : 0
+    const subtotalAfterDiscount = subtotal - discountAmount
+
+    // 3. Platform Fee (5% for Online)
+    const platformFee = subtotalAfterDiscount * 0.05
     
-    // Generate a simple order number
-    const count = await prisma.order.count()
-    const orderNumber = `ORD-${(count + 1).toString().padStart(3, '0')}`
+    // 4. Urgent Fee (15% of subtotal after bulk discount)
+    const urgentFee = data.isUrgent ? (subtotalAfterDiscount * 0.15) : 0
+    
+    const total = subtotalAfterDiscount + platformFee + urgentFee
+    
+    // 5. Generate Order Number (Timestamp based for uniqueness)
+    const orderNumber = `ORD-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
 
     const order = await prisma.order.create({
       data: {
@@ -77,13 +118,32 @@ export async function createOrder(data: {
         scheduledPickup: data.scheduledPickup,
         total,
         platformFee,
-        paymentMode: data.paymentMode || 'Cash',
+        urgentFee,
+        paymentMode,
         status: 'Pending',
         items: {
-          create: data.items,
+          create: validatedItems,
         },
       },
+      include: {
+        user: true
+      }
     })
+
+    // 6. Notify Admin
+    try {
+      const settings = await prisma.settings.findUnique({ where: { key: 'global' } })
+      const adminEmail = settings?.email || 'admin@dr-clean.com'
+      const { sendAdminNewOrderEmail } = await import('@/lib/mail')
+      await sendAdminNewOrderEmail(
+        adminEmail,
+        order.orderNumber,
+        order.user?.name || 'Customer',
+        total
+      )
+    } catch (emailError) {
+      console.error('Failed to notify admin:', emailError)
+    }
 
     revalidatePath('/admin/orders')
     revalidatePath('/customer/orders')
@@ -130,8 +190,16 @@ export async function verifyPayment(reference: string) {
     const data = await verifyPaystackTransaction(reference)
 
     if (data.status === 'success') {
+      const existingOrder = await prisma.order.findFirst({
+        where: { paymentReference: reference }
+      })
+
+      if (!existingOrder) {
+        return { success: false, error: 'Order not found with this reference' }
+      }
+
       const order = await prisma.order.update({
-        where: { paymentReference: reference },
+        where: { id: existingOrder.id },
         data: { paymentStatus: 'Paid', status: 'Processing' }
       })
 
@@ -147,13 +215,61 @@ export async function verifyPayment(reference: string) {
   }
 }
 
+export async function deleteOrder(orderId: string) {
+  const user = await currentUser()
+  if (!user) return { success: false, error: "Unauthorized" }
+
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId }
+    })
+
+    if (!order) return { success: false, error: "Order not found" }
+
+    // Only allow deletion of Pending/Unpaid orders
+    if (order.status !== 'Pending' || order.paymentStatus === 'Paid') {
+      return { success: false, error: "Cannot delete a paid or processed order" }
+    }
+
+    // Only Admin or the Order Owner can delete
+    if (user.role !== 'ADMIN' && order.userId !== user.id) {
+      return { success: false, error: "Unauthorized" }
+    }
+
+    // Delete items first if needed (Prisma handles cascading if configured, but let's be explicit or use schema)
+    // Actually, MongoDB doesn't have foreign key constraints in the same way, but Prisma handles relations.
+    await prisma.orderItem.deleteMany({
+      where: { orderId }
+    })
+
+    await prisma.order.delete({
+      where: { id: orderId }
+    })
+
+    revalidatePath('/admin/orders')
+    revalidatePath('/customer/orders')
+    return { success: true }
+  } catch (error) {
+    console.error('Error deleting order:', error)
+    return { success: false, error: 'Failed to delete order' }
+  }
+}
+
 export async function updateOrderStatus(orderId: string, status: string) {
+  if (!(await isAdmin())) return { error: "Unauthorized" }
+  
   try {
     const order = await prisma.order.update({
       where: { id: orderId },
       data: { status },
+      include: { user: true }
     })
     
+    // Trigger notification protocol
+    if (order.user?.email) {
+      await sendOrderStatusEmail(order.user.email, order.orderNumber, status)
+    }
+
     revalidatePath('/admin/orders')
     revalidatePath(`/admin/orders/${orderId}`)
     revalidatePath('/customer/orders')
@@ -164,9 +280,28 @@ export async function updateOrderStatus(orderId: string, status: string) {
   }
 }
 
+export async function updateOrderNotes(orderId: string, notes: string) {
+  if (!(await isAdmin())) return { error: "Unauthorized" }
+
+  try {
+    const order = await prisma.order.update({
+      where: { id: orderId },
+      data: { notes },
+    })
+
+    revalidatePath(`/admin/orders/${orderId}`)
+    return { success: true, order }
+  } catch (error) {
+    console.error('Error updating order notes:', error)
+    return { success: false, error: 'Failed to update notes' }
+  }
+}
+
 // --- Customer Actions ---
 
 export async function getCustomers() {
+  if (!(await isAdmin())) return []
+  
   try {
     return await prisma.user.findMany({
       where: { role: 'CUSTOMER' },
@@ -189,8 +324,14 @@ export async function getCustomers() {
 // --- Analytics Actions ---
 
 export async function getDashboardStats() {
+  if (!(await isAdmin())) return { totalOrders: 0, activeOrders: 0, totalRevenue: 0, totalCustomers: 0, averageOrderValue: 0, growth: 0 }
+
   try {
-    const [totalOrders, activeOrders, totalRevenue, totalCustomers] = await Promise.all([
+    const now = new Date()
+    const firstDayThisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+
+    const [totalOrders, activeOrders, totalRevenue, totalCustomers, revenueThisMonth, revenueLastMonth] = await Promise.all([
       prisma.order.count(),
       prisma.order.count({
         where: { NOT: { status: { in: ['Completed', 'Cancelled'] } } }
@@ -200,10 +341,32 @@ export async function getDashboardStats() {
       }),
       prisma.user.count({
         where: { role: 'CUSTOMER' }
+      }),
+      prisma.order.aggregate({
+        where: { createdAt: { gte: firstDayThisMonth } },
+        _sum: { total: true }
+      }),
+      prisma.order.aggregate({
+        where: { 
+          createdAt: { 
+            gte: firstDayLastMonth,
+            lt: firstDayThisMonth
+          } 
+        },
+        _sum: { total: true }
       })
     ])
 
     const revenue = totalRevenue._sum.total || 0
+    const currentMonthRev = revenueThisMonth._sum.total || 0
+    const lastMonthRev = revenueLastMonth._sum.total || 0
+    
+    let growth = 0
+    if (lastMonthRev > 0) {
+      growth = ((currentMonthRev - lastMonthRev) / lastMonthRev) * 100
+    } else if (currentMonthRev > 0) {
+      growth = 100
+    }
 
     return {
       totalOrders,
@@ -211,7 +374,7 @@ export async function getDashboardStats() {
       totalRevenue: revenue,
       totalCustomers,
       averageOrderValue: totalOrders > 0 ? revenue / totalOrders : 0,
-      growth: 12.5, // Mock for now
+      growth: parseFloat(growth.toFixed(1)),
     }
   } catch (error) {
     console.error('Error fetching dashboard stats:', error)
@@ -227,6 +390,8 @@ export async function getDashboardStats() {
 }
 
 export async function getAnalytics() {
+  if (!(await isAdmin())) return { totalRevenue: 0, totalOrders: 0, averageOrderValue: 0, chartData: [] }
+
   try {
     const orders = await prisma.order.findMany({
       orderBy: { createdAt: 'asc' },

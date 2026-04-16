@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { updateBulkDiscount } from "@/lib/pricing-actions"
+import { updateBulkDiscount, deleteBulkDiscount } from "@/lib/pricing-actions"
 import { formatPrice } from "@/lib/utils"
 import { toast } from "sonner"
-import { Loader2 } from "lucide-react"
+import { Loader2, Trash2 } from "lucide-react"
 
 interface BulkDiscountCardProps {
   discount: {
@@ -22,84 +22,105 @@ export function BulkDiscountCard({ discount }: BulkDiscountCardProps) {
 
   const handleSave = async () => {
     setIsPending(true)
-    const result = await updateBulkDiscount({
+    const res = await updateBulkDiscount({
       id: discount.id,
       threshold: parseFloat(threshold),
       percentage: parseFloat(percentage),
     })
     setIsPending(false)
 
-    if (result.success) {
-      toast.success("Discount updated successfully")
+    if (res.success) {
+      toast.success(res.success)
       setIsEditing(false)
     } else {
-      toast.error(result.error || "Failed to update discount")
+      toast.error(res.error)
     }
   }
 
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this discount?")) return
+    setIsPending(true)
+    const res = await deleteBulkDiscount(discount.id)
+    setIsPending(false)
+    if (res.success) toast.success(res.success)
+    else toast.error(res.error)
+  }
+
   return (
-    <div className="flex items-center justify-between p-4 border border-border rounded-lg bg-card hover:border-primary/30 transition-colors">
-      <div className="flex-1">
-        {isEditing ? (
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">Orders over</span>
+    <div className="flex flex-col md:flex-row md:items-center justify-between p-8 border border-foreground bg-background hover:bg-secondary/10 transition-all duration-500 group">
+      <div className="flex-1 mb-6 md:mb-0">
+        <p className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-4 italic">Economy Protocol</p>
+        <div className="flex items-center gap-4">
+          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">THRESHOLD:</p>
+          {isEditing ? (
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">₦</span>
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px] font-black">₦</span>
               <input
                 type="number"
                 value={threshold}
                 onChange={(e) => setThreshold(e.target.value)}
-                className="pl-7 pr-3 py-2 border border-border rounded-lg w-40 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                className="pl-6 pr-4 py-2 bg-transparent border-b border-border focus:border-foreground text-sm font-black outline-none transition-all w-48 uppercase tracking-widest"
               />
             </div>
-          </div>
-        ) : (
-          <p className="font-semibold text-foreground">
-            Orders over <span className="text-primary">{formatPrice(discount.threshold)}</span>
-          </p>
-        )}
+          ) : (
+            <p className="text-xl font-black text-foreground uppercase tracking-tight group-hover:text-primary transition-colors">
+              OVER {formatPrice(discount.threshold)}
+            </p>
+          )}
+        </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-8">
         {isEditing ? (
-          <div className="flex items-center gap-2">
-            <div className="relative">
+          <div className="flex items-center gap-6">
+            <div className="relative group/input">
               <input
                 type="number"
                 value={percentage}
                 onChange={(e) => setPercentage(e.target.value)}
-                className="px-3 py-2 border border-border rounded-lg w-20 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                className="pr-4 py-2 bg-transparent border-b border-border focus:border-foreground text-sm font-black outline-none transition-all w-24 uppercase tracking-widest"
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+              <span className="absolute right-0 top-1/2 -translate-y-1/2 text-muted-foreground text-[10px] font-black">%</span>
             </div>
-            <button
-              onClick={handleSave}
-              disabled={isPending}
-              className="bg-primary text-primary-foreground px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 disabled:opacity-50 flex items-center gap-2"
-            >
-              {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-              Save
-            </button>
-            <button
-              onClick={() => setIsEditing(false)}
-              className="text-muted-foreground hover:text-foreground font-medium px-2"
-            >
-              Cancel
-            </button>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleSave}
+                disabled={isPending}
+                className="bg-foreground text-background px-8 py-3 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-primary hover:text-white transition-all duration-700 disabled:opacity-50 flex items-center justify-center gap-3"
+              >
+                {isPending && <Loader2 className="w-3 h-3 animate-spin" />}
+                Commit
+              </button>
+              <button
+                onClick={() => setIsEditing(false)}
+                className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Void
+              </button>
+            </div>
           </div>
         ) : (
-          <>
-            <div className="flex items-baseline gap-1">
-              <span className="text-xl font-bold text-primary">{discount.percentage}%</span>
-              <span className="text-muted-foreground text-sm flex items-center">OFF</span>
+          <div className="flex items-center gap-8">
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-black text-foreground tracking-tighter uppercase font-mono">{discount.percentage}%</span>
+              <span className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em]">REDUCTION</span>
             </div>
-            <button
-              onClick={() => setIsEditing(true)}
-              className="text-primary hover:text-primary/80 font-semibold px-4 py-2"
-            >
-              Edit
-            </button>
-          </>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setIsEditing(true)}
+                className="border border-foreground px-8 py-3 text-[10px] font-black uppercase tracking-[0.4em] hover:bg-foreground hover:text-background transition-all duration-500"
+              >
+                Modify
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={isPending}
+                className="w-12 h-12 border border-border flex items-center justify-center text-red-600 hover:bg-red-600 hover:text-white transition-all duration-500"
+              >
+                {isPending ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>

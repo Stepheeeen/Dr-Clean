@@ -6,12 +6,12 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
   email         String    @unique
   password      String?
   name          String?
@@ -22,7 +22,7 @@ model User {
 }
 
 model PasswordResetToken {
-  id      String   @id @default(cuid())
+  id      String   @id @default(auto()) @map("_id") @db.ObjectId
   email   String
   token   String   @unique
   expires DateTime
@@ -31,19 +31,19 @@ model PasswordResetToken {
 }
 
 model Service {
-  id          String   @id @default(cuid())
-  name        String   @unique
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String   @unique // e.g. Shirt, Gown, Trousers
   description String
-  price       Float
-  unit        String   @default("item") // item, kg, etc.
-  category    String?  // Laundry, Dry Cleaning, etc.
+  dryCleanPrice Float    // Price for Washing + Ironing
+  ironingPrice  Float    // Price for Just Ironing
+  category    String?  // Clothing, Household, etc.
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
 model PriceModifier {
-  id          String   @id @default(cuid())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   name        String   @unique
   description String?
   price       Float
@@ -55,7 +55,7 @@ model PriceModifier {
 }
 
 model BulkDiscount {
-  id          String   @id @default(cuid())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   threshold   Float    @unique // Minimum order amount 
   percentage  Float    // Discount percentage
   isActive    Boolean  @default(true)
@@ -74,7 +74,7 @@ enum ValueType {
 }
 
 model Order {
-  id              String   @id @default(cuid())
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
   orderNumber     String   @unique // e.g. ORD-001
   status          String   @default("Pending")
   total           Float
@@ -85,21 +85,37 @@ model Order {
   
   // Payment info
   paymentStatus   String   @default("Pending") // Pending, Paid, Failed
-  paymentMode     String   @default("Cash")    // Cash, Online
-  paymentReference String?  @unique             // Paystack reference
+  paymentMode     String   @default("Online")  // Online only
+  paymentReference String?             // Paystack reference
   platformFee     Float    @default(0)         // 5% split for platform
+  urgentFee       Float    @default(0)         // Added for urgent deliveries
   
   // Relations
-  userId          String
+  userId          String   @db.ObjectId
   user            User     @relation(fields: [userId], references: [id])
   items           OrderItem[]
 }
 
 model OrderItem {
-  id        String   @id @default(cuid())
-  orderId   String
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String   @db.ObjectId
   order     Order    @relation(fields: [orderId], references: [id])
-  name      String   // Service name at time of order
+  name      String   // Item name + Service type (e.g. Shirt - Ironing)
   price     Float    // Price at time of order
   quantity  Int      @default(1)
+  serviceType String   // DryClean or Ironing
+}
+
+model Settings {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  key             String   @unique
+  heroHeadline    String?
+  heroSubheadline String?
+  aboutHeadline   String?
+  aboutDescription String?
+  phone           String?
+  email           String?
+  address         String?
+  businessHours   Json?    // Store weekly hours as JSON
+  updatedAt       DateTime @updatedAt
 }
